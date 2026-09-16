@@ -1,0 +1,10 @@
+question,expected_status,actual_status,passed,failure_reason
+How risky is flooding in the North West?,answered,answered,True,
+How much maize do farmers sell?,answered,answered,True,
+Which crops have the highest yields in Nigeria?,answered,answered,True,
+What crops do people farm most in Kaduna?,answered,answered,True,
+Is food security better after harvest?,answered,answered,True,
+Which state looks strongest for rice?,needs_clarification,needs_clarification,True,
+Does extension improve yield?,reframe_required,reframe_required,True,
+Should I farm maize in Katsina?,reframe_required,reframe_required,True,
+What is the most profitable crop?,unsupported,unsupported,True,

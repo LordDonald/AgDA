@@ -1,0 +1,10 @@
+{
+  "project": "AgDA",
+  "data_version": "wave5_v1",
+  "previous_state": "candidate",
+  "new_state": "stable",
+  "promoted_at_utc": "2026-08-28T23:04:24.989995+00:00",
+  "independent_validation_file": "independent_validation.json",
+  "independent_validation_passed": true,
+  "application_default": true
+}

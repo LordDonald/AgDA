@@ -1,0 +1,8 @@
+field,required,description
+metric_id,True,Executable metric identifier from analytical_metric_registry.
+operation,True,"Analytical operation: value, group, or rank."
+filters,False,"Dictionary of user-requested analytical filters, for example state, crop, zone, sector or climate_event."
+group_by,False,Dimension used for group/rank operations.
+ascending,False,Ranking direction; False means highest first.
+top_n,False,Maximum number of ranked groups to return.
+minimum_records,False,Optional evidence-size threshold overriding the metric default.

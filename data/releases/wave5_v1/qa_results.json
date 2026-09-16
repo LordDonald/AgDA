@@ -1,0 +1,15 @@
+{
+  "data_version": "wave5_v1",
+  "metric_version": "1.0.0",
+  "processed_tables_expected": 10,
+  "processed_tables_published": 10,
+  "processed_row_counts_valid": true,
+  "analytical_views_expected": 7,
+  "analytical_views_published": 7,
+  "view_row_counts_valid": true,
+  "entity_catalogs_expected": 5,
+  "entity_catalogs_published": 5,
+  "metric_artifacts_expected": 3,
+  "metric_artifacts_published": 3,
+  "release_content_valid": true
+}

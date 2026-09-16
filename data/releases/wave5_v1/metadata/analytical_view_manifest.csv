@@ -1,0 +1,8 @@
+view_name,grain,rows,columns,duplicate_primary_keys,primary_key_unique,purpose,file_name
+crop_performance_view,crop,51,21,0,True,Cross-domain crop yield and commercialization performance.,crop_performance_view.csv
+production_extension_view,hhid + plotid + cropcode,10071,71,0,True,Production records enriched with household extension/information indicators.,production_extension_view.csv
+commercialization_food_security_view,hhid,4715,34,0,True,Household commercialization summary combined with food-security outcomes.,commercialization_food_security_view.csv
+state_price_context,state,37,7,0,True,State-level same-measurement-basis community price context.,state_price_context.csv
+state_climate_context,state,37,7,0,True,State-level perceived climate-risk context.,state_climate_context.csv
+state_crop_production,state + crop,424,7,0,True,Completed-harvest crop yield evidence by state and crop.,state_crop_production.csv
+state_crop_context_view,state + crop,424,15,0,True,State-crop yield combined with state price and climate context.,state_crop_context_view.csv

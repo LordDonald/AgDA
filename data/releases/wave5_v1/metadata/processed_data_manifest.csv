@@ -1,0 +1,11 @@
+table_name,domain,grain,rows,columns,expected_rows,row_count_valid,duplicate_primary_keys,primary_key_unique,dictionary_rows,dictionary_matches_columns,data_file,dictionary_file
+households_wave5,Household backbone,hhid,4715,27,4715,True,0,True,27,True,households_wave5.csv,households_wave5_dictionary.csv
+plots_wave5,Agriculture - plots,hhid + plotid,9183,30,9183,True,0,True,30,True,plots_wave5.csv,plots_wave5_dictionary.csv
+crop_planting_wave5,Agriculture - planting,hhid + plotid + cropcode,10562,45,10562,True,0,True,45,True,crop_planting_wave5.csv,crop_planting_wave5_dictionary.csv
+field_crop_production_wave5,Agriculture - production/yield,hhid + plotid + cropcode,10071,54,10071,True,0,True,54,True,field_crop_production_wave5.csv,field_crop_production_wave5_dictionary.csv
+crop_commercialization_wave5,Agriculture - commercialization,hhid + cropcode,7184,76,7184,True,0,True,76,True,crop_commercialization_wave5.csv,crop_commercialization_wave5_dictionary.csv
+food_security_wave5,Food security,hhid,4715,27,4715,True,0,True,27,True,food_security_wave5.csv,food_security_wave5_dictionary.csv
+information_access_wave5,Extension and digital information,hhid,4715,42,4715,True,0,True,42,True,information_access_wave5.csv,information_access_wave5_dictionary.csv
+community_prices_wave5,Community price context,cluster_id + item_cd + visit,112665,20,112665,True,0,True,20,True,community_prices_wave5.csv,community_prices_wave5_dictionary.csv
+community_price_change_wave5,Community price comparison,cluster_id + item_cd,56055,22,56055,True,0,True,22,True,community_price_change_wave5.csv,community_price_change_wave5_dictionary.csv
+climate_context_wave5,Climate context,cluster_id + climate_exp_cd,2032,67,2032,True,0,True,67,True,climate_context_wave5.csv,climate_context_wave5_dictionary.csv

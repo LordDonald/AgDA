@@ -1,0 +1,58 @@
+[
+  {
+    "question": "How risky is flooding in the North West?",
+    "expected_status": "answered",
+    "expected_metric": "climate_likely_share",
+    "expected_result_type": "scalar",
+    "expected_value": 0.125,
+    "tolerance": 1e-06
+  },
+  {
+    "question": "How much maize do farmers sell?",
+    "expected_status": "answered",
+    "expected_metric": "median_commercialization_share",
+    "expected_result_type": "scalar",
+    "expected_value": 25.0,
+    "tolerance": 1e-06
+  },
+  {
+    "question": "Which crops have the highest yields in Nigeria?",
+    "expected_status": "answered",
+    "expected_metric": "median_completed_yield",
+    "expected_result_type": "table",
+    "expected_top_group": "YAM, THREE LEAVED",
+    "group_column": "crop"
+  },
+  {
+    "question": "What crops do people farm most in Kaduna?",
+    "expected_status": "answered",
+    "expected_metric": "crop_grower_share",
+    "expected_result_type": "table",
+    "expected_top_group": "MAIZE",
+    "group_column": "crop"
+  },
+  {
+    "question": "Is food security better after harvest?",
+    "expected_status": "answered",
+    "expected_metric": "food_insecurity_change",
+    "expected_result_type": "scalar",
+    "expected_value": -0.29724130404015003,
+    "tolerance": 1e-06
+  },
+  {
+    "question": "Which state looks strongest for rice?",
+    "expected_status": "needs_clarification"
+  },
+  {
+    "question": "Does extension improve yield?",
+    "expected_status": "reframe_required"
+  },
+  {
+    "question": "Should I farm maize in Katsina?",
+    "expected_status": "reframe_required"
+  },
+  {
+    "question": "What is the most profitable crop?",
+    "expected_status": "unsupported"
+  }
+]

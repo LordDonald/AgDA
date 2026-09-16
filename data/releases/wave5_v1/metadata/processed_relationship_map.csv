@@ -1,0 +1,10 @@
+parent_table,child_table,join_keys,cardinality,join_rule
+households_wave5,plots_wave5,hhid,1-to-many,Direct join.
+plots_wave5,crop_planting_wave5,hhid + plotid,1-to-many,Direct join.
+crop_planting_wave5,field_crop_production_wave5,hhid + plotid + cropcode,1-to-0/1,Direct field-crop planting-to-harvest join.
+households_wave5,crop_commercialization_wave5,hhid,1-to-many,Direct household join. Commercialization table grain is hhid + cropcode.
+field_crop_production_wave5,crop_commercialization_wave5,hhid + cropcode,many-to-1,Do not sum after directly joining plot-level production. Aggregate production to hhid + cropcode first.
+households_wave5,food_security_wave5,hhid,1-to-1,Direct join.
+households_wave5,information_access_wave5,hhid,1-to-1,Direct join.
+households_wave5,community_prices_wave5,households.cluster = community_prices.cluster,many-to-many via community context,Context join only. 99.92% household coverage. Aggregate/filter community-item records before household analysis.
+households_wave5,climate_context_wave5,households.cluster -> community_cluster_crosswalk.original_cluster -> current_ea_id = climate_context.cluster_id,many-to-many via bridged community context,Use community_cluster_crosswalk_wave5.csv. 99.60% household coverage. Each climate cluster contains four event records.

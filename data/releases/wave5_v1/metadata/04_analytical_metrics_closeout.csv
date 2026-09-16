@@ -1,0 +1,2 @@
+notebook,status,metric_catalog_count,executable_metrics,answer_policies,question_families,analytical_views,question_spec_operations,evidence_grading_enabled,causal_claims_enabled,human_friendly_filtering,grouping_ranking_enabled,cross_domain_analysis_enabled,geographic_context_enabled,all_metrics_executable,all_view_keys_unique,exports_validated
+04_analytical_metrics.ipynb,COMPLETE,18,18,18,8,7,3,True,False,True,True,True,True,True,True,True

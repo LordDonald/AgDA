@@ -1,0 +1,18 @@
+{
+  "project": "AgDA",
+  "data_version": "wave5_v1",
+  "survey_wave": "Wave 5",
+  "release_state": "stable",
+  "created_at_utc": "2026-08-28T22:30:03.555804+00:00",
+  "storage_format": "parquet",
+  "query_engine": "duckdb",
+  "metric_version": "1.0.0",
+  "processed_table_count": 10,
+  "analytical_view_count": 7,
+  "entity_catalog_count": 5,
+  "metric_artifact_count": 3,
+  "release_content_valid": true,
+  "application_default": true,
+  "promoted_at_utc": "2026-08-28T23:04:24.989995+00:00",
+  "promotion_validation": "independent_validation_passed"
+}
