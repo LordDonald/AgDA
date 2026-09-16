@@ -844,3 +844,121 @@ button {
     max-width: 78%;
   }
 }
+
+
+/* ============================================================
+   ACTIVE CONVERSATION COMPOSER
+   ============================================================ */
+
+.conversationHistory {
+  margin: 40px auto 0;
+  padding-bottom: 0;
+}
+
+.conversationEndAnchor {
+  height: 190px;
+}
+
+.conversationComposerShell {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  padding:
+    18px
+    20px
+    calc(
+      18px
+      + env(safe-area-inset-bottom)
+    );
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to top,
+      rgba(245, 248, 244, 0.98) 68%,
+      rgba(245, 248, 244, 0)
+    );
+}
+
+.conversationComposer {
+  width:
+    min(
+      900px,
+      calc(100% - 40px)
+    );
+  margin: 0 auto;
+  padding: 8px 10px;
+  border-radius: 18px;
+  pointer-events: auto;
+  box-shadow:
+    0 12px 34px
+    rgba(25, 55, 38, 0.14);
+}
+
+.conversationComposer textarea {
+  min-height: 52px;
+  max-height: 150px;
+  padding: 12px 14px;
+  resize: none;
+}
+
+.conversationComposer .formFooter {
+  padding: 4px;
+}
+
+
+/* ============================================================
+   ACTIVE COMPOSER — MOBILE
+   ============================================================ */
+
+@media (max-width: 720px) {
+
+  .conversationHistory {
+    margin-top: 24px;
+    padding-bottom: 0;
+  }
+
+  .conversationEndAnchor {
+    height: 160px;
+  }
+
+  .conversationComposerShell {
+    padding:
+      8px
+      8px
+      calc(
+        8px
+        + env(safe-area-inset-bottom)
+      );
+  }
+
+  .conversationComposer {
+    width: 100%;
+    padding: 7px;
+    border-radius: 16px;
+  }
+
+  .conversationComposer textarea {
+    min-height: 48px;
+    max-height: 110px;
+    padding: 10px 12px;
+  }
+
+  .conversationComposer .formFooter {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .conversationComposer .formHint {
+    display: none;
+  }
+
+  .conversationComposer button {
+    width: auto;
+    min-height: 42px;
+    padding: 10px 15px;
+  }
+
+}

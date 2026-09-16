@@ -1170,7 +1170,14 @@ export default function Home() {
       </header>
 
 
-      <section className="hero">
+      {!(
+        turns.length > 0
+        ||
+        pendingQuestion
+      ) && (
+
+        <section className="hero">
+
 
         <div className="eyebrow">
           Evidence-backed
@@ -1333,6 +1340,9 @@ export default function Home() {
         )}
 
       </section>
+
+
+      )}
 
 
       {error && (
@@ -1502,12 +1512,100 @@ export default function Home() {
 
 
           <div
+            className="conversationEndAnchor"
             ref={
               conversationEndRef
             }
           />
 
         </section>
+
+            )}
+
+
+      {(
+        turns.length > 0
+        ||
+        pendingQuestion
+      ) && (
+
+        <div className="conversationComposerShell">
+
+          <form
+            className="
+              questionForm
+              conversationComposer
+            "
+            onSubmit={
+              handleSubmit
+            }
+          >
+
+            <textarea
+              value={
+                question
+              }
+
+              onChange={
+                (
+                  event
+                ) =>
+                  setQuestion(
+                    event
+                    .target
+                    .value
+                  )
+              }
+
+              onKeyDown={
+                handleQuestionKeyDown
+              }
+
+              placeholder={
+                "Ask a follow-up..."
+              }
+
+              rows={1}
+
+              disabled={
+                loading
+              }
+            />
+
+
+            <div className="formFooter">
+
+              <span className="formHint">
+
+                AgDA will use context
+                from this conversation.
+
+              </span>
+
+
+              <button
+                type="submit"
+
+                disabled={
+                  loading
+                  ||
+                  !question.trim()
+                  ||
+                  backendReady === false
+                }
+              >
+
+                {loading
+                  ? "Analysing..."
+                  : "Ask AgDA"}
+
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
 
       )}
 
