@@ -1,0 +1,3 @@
+# AgDA stable release artifacts are checksum-validated byte-for-byte.
+# Git must not perform line-ending conversion on any release artifact.
+data/releases/** -text
