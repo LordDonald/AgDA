@@ -18,15 +18,28 @@ export async function POST(
     const apiUrl =
       getAgdaApiUrl();
 
+    const requestId =
+      request.headers.get(
+        "X-Request-ID"
+      );
+
+    const headers:
+      Record<string, string> = {
+        "Content-Type":
+          "application/json",
+      };
+
+    if (requestId) {
+      headers["X-Request-ID"] =
+        requestId;
+    }
+
     const response =
       await fetch(
         `${apiUrl}/v1/questions`,
         {
           method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+          headers,
           body:
             JSON.stringify(body),
           cache: "no-store",
@@ -36,13 +49,30 @@ export async function POST(
     const payload =
       await response.json();
 
+    const backendRequestId =
+      response.headers.get(
+        "X-Request-ID"
+      );
+
+    const responseHeaders:
+      Record<string, string> = {};
+
+    if (backendRequestId) {
+      responseHeaders[
+        "X-Request-ID"
+      ] = backendRequestId;
+    }
+
     return NextResponse.json(
       payload,
       {
         status:
           response.status,
+        headers:
+          responseHeaders,
       }
     );
+
   } catch (error) {
     console.error(
       "AgDA backend request failed:",
