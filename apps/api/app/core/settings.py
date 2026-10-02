@@ -128,6 +128,12 @@ class AppSettings:
 
     max_request_bytes: int
 
+    conversation_backend: str
+
+    conversation_ttl_seconds: int
+
+    redis_url: str | None
+
     docs_enabled: bool
 
     service_name: str
@@ -215,6 +221,51 @@ class AppSettings:
             != "production"
         )
 
+        conversation_backend = (
+            os.getenv(
+                "AGDA_CONVERSATION_BACKEND",
+                "memory",
+            )
+            .strip()
+            .casefold()
+        )
+
+
+        if conversation_backend not in {
+            "memory",
+            "redis",
+        }:
+
+            raise ValueError(
+                "AGDA_CONVERSATION_BACKEND "
+                "must be one of: memory, redis."
+            )
+
+
+        redis_url_raw = (
+            os.getenv(
+                "AGDA_REDIS_URL"
+            )
+        )
+
+
+        redis_url = (
+            redis_url_raw.strip()
+            if redis_url_raw
+            else None
+        )
+
+
+        if (
+            conversation_backend == "redis"
+            and not redis_url
+        ):
+
+            raise ValueError(
+                "AGDA_REDIS_URL is required "
+                "when AGDA_CONVERSATION_BACKEND=redis."
+            )
+
 
         return cls(
             environment=
@@ -234,6 +285,18 @@ class AppSettings:
                     "AGDA_MAX_REQUEST_BYTES",
                     16384,
                 ),
+
+            conversation_backend=
+                conversation_backend,
+
+            conversation_ttl_seconds=
+                _read_positive_int(
+                    "AGDA_CONVERSATION_TTL_SECONDS",
+                    86400,
+                ),
+
+            redis_url=
+                redis_url,
 
             docs_enabled=
                 _read_bool(
