@@ -172,6 +172,14 @@ class AgDARuntime:
 
                     max_conversations=
                         settings.max_conversations,
+
+                    key_prefix=
+                        (
+                            "agda:"
+                            f"{settings.environment}:"
+                            "conversation"
+                        ),
+
                 )
             )
 
