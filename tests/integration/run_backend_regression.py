@@ -38,6 +38,7 @@ TEST_FILES = [
     "test_api.py",
     "test_clarification_followups.py",
     "test_conversation_context.py",
+    "test_redis_conversation_store.py",
     "test_api_conversation.py",
     "test_api_observability.py",
     "test_api_health_config.py",

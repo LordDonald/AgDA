@@ -30,6 +30,7 @@ from packages.question_router.router import (
 
 from packages.answering.conversations import (
     ConversationStore,
+    RedisConversationStore,
 )
 
 from packages.question_router.conversation import (
@@ -155,15 +156,35 @@ class AgDARuntime:
             )
         )
 
+        if (
+            settings.conversation_backend
+            == "redis"
+        ):
 
-        self.conversation_store = (
-            ConversationStore(
-                max_conversations=
-                    settings.max_conversations
+            self.conversation_store = (
+                RedisConversationStore(
+                    redis_url=
+                        settings.redis_url,
+
+                    ttl_seconds=
+                        settings
+                        .conversation_ttl_seconds,
+
+                    max_conversations=
+                        settings.max_conversations,
+                )
             )
-        )
 
-        
+        else:
+
+            self.conversation_store = (
+                ConversationStore(
+                    max_conversations=
+                        settings.max_conversations
+                )
+            )
+
+
         self.pipeline = (
             QuestionPipeline(
                 router=
@@ -213,9 +234,11 @@ class AgDARuntime:
 
         if self.conversation_store is not None:
 
-            self.conversation_store.clear()
+            self.conversation_store.close()
 
-        
+
+        self.conversation_store = None
+
         self.connection = None
 
         self.ready = False
