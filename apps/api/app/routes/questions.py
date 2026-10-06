@@ -4,6 +4,7 @@ import time
 
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     HTTPException,
 )
 
@@ -29,6 +30,7 @@ from apps.api.app.core.observability import (
 
 from apps.api.app.core.product_analytics import (
     emit_question_event,
+    persist_question_event,
 )
 
 from apps.api.app.core.settings import (
@@ -47,6 +49,7 @@ router = APIRouter(
 )
 def ask_question(
     request: QuestionRequest,
+    background_tasks: BackgroundTasks,
 ):
 
     if (
@@ -161,7 +164,7 @@ def ask_question(
         )
 
 
-        emit_question_event(
+        event_payload = emit_question_event(
             request_id=
                 get_request_id(),
 
@@ -182,6 +185,20 @@ def ask_question(
             processing_duration_ms=
                 processing_duration_ms,
         )
+
+
+        if (
+            settings.analytics_database_url
+            and event_payload is not None
+        ):
+
+            background_tasks.add_task(
+                persist_question_event,
+                database_url=
+                    settings.analytics_database_url,
+                payload=
+                    event_payload,
+            )
 
 
         return answer

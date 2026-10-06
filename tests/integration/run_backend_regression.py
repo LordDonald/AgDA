@@ -41,6 +41,7 @@ TEST_FILES = [
     "test_redis_conversation_store.py",
     "test_api_conversation.py",
     "test_product_analytics.py",
+    "test_product_analytics_persistence.py",
     "test_api_observability.py",
     "test_api_health_config.py",
     "test_api_limits.py",
