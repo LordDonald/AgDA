@@ -1,5 +1,7 @@
 from uuid import uuid4
 
+import time
+
 from fastapi import (
     APIRouter,
     HTTPException,
@@ -19,6 +21,18 @@ from apps.api.app.core.runtime import (
 
 from packages.contracts.question import (
     InterpretationStatus,
+)
+
+from apps.api.app.core.observability import (
+    get_request_id,
+)
+
+from apps.api.app.core.product_analytics import (
+    emit_question_event,
+)
+
+from apps.api.app.core.settings import (
+    settings,
 )
 
 router = APIRouter(
@@ -48,6 +62,10 @@ def ask_question(
                 "is not ready."
             ),
         )
+
+    started_at = (
+        time.perf_counter()
+    )
 
 
     try:
@@ -132,6 +150,38 @@ def ask_question(
                         None
                 }
             )
+
+        processing_duration_ms = round(
+            (
+                time.perf_counter()
+                - started_at
+            )
+            * 1000,
+            2,
+        )
+
+
+        emit_question_event(
+            request_id=
+                get_request_id(),
+
+            environment=
+                settings.environment,
+
+            answer=
+                answer,
+
+            was_follow_up=
+                context is not None,
+
+            question_length=
+                len(
+                    request.question
+                ),
+
+            processing_duration_ms=
+                processing_duration_ms,
+        )
 
 
         return answer

@@ -92,6 +92,12 @@ logging.getLogger(
     )
 )
 
+logging.getLogger(
+    "agda.product"
+).setLevel(
+    logging.INFO
+)
+
 
 # ============================================================
 # FASTAPI APPLICATION
