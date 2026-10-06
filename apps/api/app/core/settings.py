@@ -134,6 +134,8 @@ class AppSettings:
 
     redis_url: str | None
 
+    analytics_database_url: str | None
+
     docs_enabled: bool
 
     service_name: str
@@ -267,6 +269,20 @@ class AppSettings:
             )
 
 
+        analytics_database_url_raw = (
+            os.getenv(
+                "AGDA_ANALYTICS_DATABASE_URL"
+            )
+        )
+
+
+        analytics_database_url = (
+            analytics_database_url_raw.strip()
+            if analytics_database_url_raw
+            else None
+        )
+
+
         return cls(
             environment=
                 environment,
@@ -297,6 +313,9 @@ class AppSettings:
 
             redis_url=
                 redis_url,
+
+            analytics_database_url=
+                analytics_database_url,
 
             docs_enabled=
                 _read_bool(
