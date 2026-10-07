@@ -33,6 +33,10 @@ from apps.api.app.routes.feedback import (
     router as feedback_router,
 )
 
+from apps.api.app.routes.internal_analytics import (
+    router as internal_analytics_router,
+)
+
 from apps.api.app.routes.entities import (
     router as entities_router,
 )
@@ -171,6 +175,10 @@ app.include_router(
 
 app.include_router(
     feedback_router
+)
+
+app.include_router(
+    internal_analytics_router
 )
 
 app.include_router(
