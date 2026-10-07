@@ -838,7 +838,7 @@ function AnswerCard({
                 );
               }}
             >
-              ?? Helpful
+              {"\u{1F44D}"} Helpful
             </button>
 
 
@@ -866,7 +866,7 @@ function AnswerCard({
                 );
               }}
             >
-              ?? Not helpful
+              {"\u{1F44E}"} Not helpful
             </button>
 
           </div>
