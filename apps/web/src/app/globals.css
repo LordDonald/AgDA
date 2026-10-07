@@ -962,3 +962,94 @@ button {
   }
 
 }
+
+/* ============================================================
+   ANSWER FEEDBACK
+   ============================================================ */
+
+.feedbackPanel {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.feedbackPrompt {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.feedbackButtons,
+.feedbackReasonButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 10px;
+}
+
+.feedbackButton,
+.feedbackReasonButton {
+  appearance: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #4c584e;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.feedbackButton:hover:not(:disabled),
+.feedbackReasonButton:hover:not(:disabled) {
+  border-color: #a9beaf;
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+.feedbackButton.active,
+.feedbackReasonButton.active {
+  border-color: #a9beaf;
+  background: var(--green-soft);
+  color: var(--green-dark);
+  font-weight: 700;
+}
+
+.feedbackButton:disabled,
+.feedbackReasonButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.feedbackReasons {
+  margin-top: 15px;
+}
+
+.feedbackReasonLabel {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.feedbackReasonLabel span {
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.feedbackStatus,
+.feedbackError {
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.feedbackStatus {
+  color: var(--green-dark);
+}
+
+.feedbackError {
+  color: #78443f;
+}

@@ -83,11 +83,50 @@ type AgDAAnswer = {
 };
 
 
+type FeedbackRating =
+  | "helpful"
+  | "not_helpful";
+
+type FeedbackReason =
+  | "incorrect"
+  | "unclear"
+  | "not_relevant"
+  | "insufficient_evidence"
+  | "other";
+
 type ConversationTurn = {
   id: string;
   question: string;
   answer: AgDAAnswer;
+  requestId: string | null;
 };
+
+
+const feedbackReasons: {
+  value: FeedbackReason;
+  label: string;
+}[] = [
+  {
+    value: "incorrect",
+    label: "Incorrect",
+  },
+  {
+    value: "unclear",
+    label: "Unclear",
+  },
+  {
+    value: "not_relevant",
+    label: "Not relevant",
+  },
+  {
+    value: "insufficient_evidence",
+    label: "Insufficient evidence",
+  },
+  {
+    value: "other",
+    label: "Other",
+  },
+];
 
 
 const exampleQuestions = [
@@ -374,16 +413,153 @@ function RankedResults({
 
 function AnswerCard({
   answer,
+  requestId,
   loading,
   onFollowUp,
 }: {
   answer: AgDAAnswer;
+  requestId: string | null;
   loading: boolean;
   onFollowUp:
     (
       question: string
     ) => void;
 }) {
+
+  const [
+    feedbackRating,
+    setFeedbackRating,
+  ] = useState<
+    FeedbackRating | null
+  >(null);
+
+  const [
+    feedbackReason,
+    setFeedbackReason,
+  ] = useState<
+    FeedbackReason | null
+  >(null);
+
+  const [
+    feedbackSaving,
+    setFeedbackSaving,
+  ] = useState(false);
+
+  const [
+    feedbackMessage,
+    setFeedbackMessage,
+  ] = useState<
+    string | null
+  >(null);
+
+  const [
+    feedbackError,
+    setFeedbackError,
+  ] = useState<
+    string | null
+  >(null);
+
+
+  async function submitFeedback(
+    rating: FeedbackRating,
+    reasonCode: FeedbackReason | null
+  ) {
+
+    if (
+      !requestId
+      ||
+      feedbackSaving
+    ) {
+      return;
+    }
+
+
+    setFeedbackSaving(true);
+    setFeedbackError(null);
+    setFeedbackMessage(null);
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/feedback",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify({
+                request_id:
+                  requestId,
+
+                rating:
+                  rating,
+
+                reason_code:
+                  reasonCode,
+              }),
+          }
+        );
+
+
+      const payload =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          typeof payload.detail
+            === "string"
+              ? payload.detail
+              : (
+                  "AgDA could not save " +
+                  "feedback right now."
+                )
+        );
+
+      }
+
+
+      setFeedbackRating(
+        rating
+      );
+
+      setFeedbackReason(
+        reasonCode
+      );
+
+      setFeedbackMessage(
+        reasonCode
+          ? "Thanks ? feedback updated."
+          : "Thanks for the feedback."
+      );
+
+    } catch (
+      submitError
+    ) {
+
+      setFeedbackError(
+        submitError instanceof Error
+          ? submitError.message
+          : (
+              "AgDA could not save " +
+              "feedback right now."
+            )
+      );
+
+    } finally {
+
+      setFeedbackSaving(false);
+
+    }
+  }
+
 
   return (
     <section className="responseCard">
@@ -625,6 +801,171 @@ function AnswerCard({
         )}
 
       </div>
+
+
+      {requestId && (
+
+        <div className="feedbackPanel">
+
+          <div className="feedbackPrompt">
+            Was this answer helpful?
+          </div>
+
+
+          <div className="feedbackButtons">
+
+            <button
+              type="button"
+
+              className={
+                "feedbackButton " +
+                (
+                  feedbackRating
+                  === "helpful"
+                    ? "active"
+                    : ""
+                )
+              }
+
+              disabled={
+                feedbackSaving
+              }
+
+              onClick={() => {
+                void submitFeedback(
+                  "helpful",
+                  null
+                );
+              }}
+            >
+              ?? Helpful
+            </button>
+
+
+            <button
+              type="button"
+
+              className={
+                "feedbackButton " +
+                (
+                  feedbackRating
+                  === "not_helpful"
+                    ? "active"
+                    : ""
+                )
+              }
+
+              disabled={
+                feedbackSaving
+              }
+
+              onClick={() => {
+                void submitFeedback(
+                  "not_helpful",
+                  null
+                );
+              }}
+            >
+              ?? Not helpful
+            </button>
+
+          </div>
+
+
+          {feedbackRating
+            === "not_helpful" && (
+
+            <div className="feedbackReasons">
+
+              <div
+                className="feedbackReasonLabel"
+              >
+                What could be better?
+                {" "}
+                <span>
+                  Optional
+                </span>
+              </div>
+
+
+              <div
+                className="
+                  feedbackReasonButtons
+                "
+              >
+
+                {feedbackReasons.map(
+                  (
+                    reason
+                  ) => (
+
+                    <button
+                      key={
+                        reason.value
+                      }
+
+                      type="button"
+
+                      className={
+                        "feedbackReasonButton " +
+                        (
+                          feedbackReason
+                          === reason.value
+                            ? "active"
+                            : ""
+                        )
+                      }
+
+                      disabled={
+                        feedbackSaving
+                      }
+
+                      onClick={() => {
+                        void submitFeedback(
+                          "not_helpful",
+                          reason.value
+                        );
+                      }}
+                    >
+                      {reason.label}
+                    </button>
+
+                  )
+                )}
+
+              </div>
+
+            </div>
+
+          )}
+
+
+          {feedbackMessage && (
+
+            <div
+              className="feedbackStatus"
+              aria-live="polite"
+            >
+              {feedbackMessage}
+            </div>
+
+          )}
+
+
+          {feedbackError && (
+
+            <div
+              className="feedbackError"
+              role="alert"
+            >
+              {feedbackError}
+            </div>
+
+          )}
+
+        </div>
+
+      )}
 
     </section>
   );
@@ -918,6 +1259,13 @@ export default function Home() {
       );
 
 
+      const requestId = (
+        response.headers.get(
+          "X-Request-ID"
+        )
+      );
+
+
     if (!response.ok) {
         
         if (
@@ -984,6 +1332,9 @@ export default function Home() {
 
             answer:
               answer,
+
+            requestId:
+              requestId,
           },
         ]
       );
@@ -1433,6 +1784,10 @@ export default function Home() {
                 <AnswerCard
                   answer={
                     turn.answer
+                  }
+
+                  requestId={
+                    turn.requestId
                   }
 
                   loading={
