@@ -1,0 +1,261 @@
+.page {
+  min-height: 100vh;
+  background: #f3f5f1;
+  color: #172219;
+  padding: 48px 24px 80px;
+}
+
+.header,
+.loginCard,
+.toolbar,
+.kpiGrid,
+.card,
+.twoColumn {
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.header {
+  margin-bottom: 28px;
+}
+
+.header h1 {
+  margin: 8px 0 8px;
+  font-size: clamp(34px, 5vw, 54px);
+  letter-spacing: -0.04em;
+}
+
+.header p {
+  margin: 0;
+  color: #657067;
+  font-size: 16px;
+}
+
+.eyebrow {
+  color: #2f6f4a;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.loginCard,
+.card,
+.kpi {
+  background: white;
+  border: 1px solid #dfe5dd;
+  border-radius: 20px;
+  box-shadow:
+    0 16px 45px rgba(31, 50, 36, 0.06);
+}
+
+.loginCard {
+  max-width: 560px;
+  padding: 30px;
+}
+
+.loginCard h2 {
+  margin-top: 0;
+}
+
+.loginCard p {
+  color: #657067;
+}
+
+.loginCard form {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.loginCard input {
+  width: 100%;
+  border: 1px solid #d4dbd2;
+  border-radius: 12px;
+  padding: 13px 14px;
+  font: inherit;
+}
+
+.loginCard button,
+.toolbar button {
+  border: 0;
+  border-radius: 12px;
+  background: #2f6f4a;
+  color: white;
+  padding: 11px 16px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.loginCard button:disabled,
+.toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.error {
+  margin-top: 14px;
+  color: #8a3f39;
+  font-size: 14px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  color: #657067;
+  font-size: 13px;
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.kpi {
+  padding: 20px;
+}
+
+.kpi span {
+  display: block;
+  color: #657067;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.kpi strong {
+  display: block;
+  margin-top: 8px;
+  color: #1e5638;
+  font-size: 28px;
+}
+
+.kpi small {
+  display: block;
+  margin-top: 6px;
+  color: #8a938b;
+  font-size: 10px;
+}
+
+.card {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  margin: 0 0 18px;
+  font-size: 20px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.tableWrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tableWrap th,
+.tableWrap td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e7ebe5;
+  white-space: nowrap;
+}
+
+.tableWrap th {
+  color: #657067;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.twoColumn {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 20px;
+}
+
+.twoColumn .card {
+  margin-bottom: 0;
+}
+
+.list {
+  display: grid;
+  gap: 4px;
+}
+
+.listRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 11px 0;
+  border-bottom: 1px solid #e7ebe5;
+  text-transform: capitalize;
+}
+
+.listRow:last-child {
+  border-bottom: 0;
+}
+
+.listRow strong {
+  color: #1e5638;
+}
+
+.empty {
+  color: #657067;
+  font-size: 14px;
+}
+
+@media (
+  max-width: 900px
+) {
+
+  .kpiGrid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .twoColumn {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (
+  max-width: 560px
+) {
+
+  .page {
+    padding:
+      28px 14px
+      60px;
+  }
+
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .card,
+  .loginCard {
+    padding: 18px;
+    border-radius: 16px;
+  }
+}
