@@ -29,6 +29,10 @@ from apps.api.app.routes.questions import (
     router as questions_router,
 )
 
+from apps.api.app.routes.feedback import (
+    router as feedback_router,
+)
+
 from apps.api.app.routes.entities import (
     router as entities_router,
 )
@@ -163,6 +167,10 @@ app.include_router(
 
 app.include_router(
     questions_router
+)
+
+app.include_router(
+    feedback_router
 )
 
 app.include_router(
