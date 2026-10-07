@@ -136,6 +136,8 @@ class AppSettings:
 
     analytics_database_url: str | None
 
+    internal_analytics_token: str | None
+
     docs_enabled: bool
 
     service_name: str
@@ -283,6 +285,20 @@ class AppSettings:
         )
 
 
+        internal_analytics_token_raw = (
+            os.getenv(
+                "AGDA_INTERNAL_ANALYTICS_TOKEN"
+            )
+        )
+
+
+        internal_analytics_token = (
+            internal_analytics_token_raw.strip()
+            if internal_analytics_token_raw
+            else None
+        )
+
+
         return cls(
             environment=
                 environment,
@@ -316,6 +332,9 @@ class AppSettings:
 
             analytics_database_url=
                 analytics_database_url,
+
+            internal_analytics_token=
+                internal_analytics_token,
 
             docs_enabled=
                 _read_bool(
