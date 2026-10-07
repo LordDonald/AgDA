@@ -717,7 +717,7 @@ export default function InternalAnalyticsPage() {
                             row
                             .question_count
                           }
-                          {" ? "}
+                          {"\u00B7"}
                           {formatPercent(
                             row.share_pct
                           )}
@@ -794,7 +794,7 @@ export default function InternalAnalyticsPage() {
                                 row
                                 .feedback_count
                               }
-                              {" ? "}
+                              {"\u00B7"}
                               {formatPercent(
                                 row.share_pct
                               )}
