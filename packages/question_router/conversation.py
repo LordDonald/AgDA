@@ -284,10 +284,73 @@ class ContextualQuestionResolver:
         )
 
 
-        if not self._looks_like_follow_up(
-            normalized,
-            new_entities,
-            metric_switch,
+        climate_region_ranking_follow_up = (
+            previous.question_specification.metric_id
+            == "climate_likely_share"
+            and
+            (
+                "region" in normalized.split()
+                or
+                "regions" in normalized.split()
+                or
+                "zone" in normalized.split()
+                or
+                "zones" in normalized.split()
+            )
+            and
+            any(
+                phrase in normalized
+                for phrase in (
+                    "most affected",
+                    "most at risk",
+                    "highest risk",
+                    "highest",
+                    "most",
+                    "top",
+                )
+            )
+        )
+
+
+        direction_only_follow_up = (
+            previous.question_specification.operation
+            == Operation.RANK
+            and
+            previous.question_specification.group_by
+            is not None
+            and
+            (
+                normalized.startswith(
+                    "and "
+                )
+                or normalized.startswith(
+                    "which "
+                )
+            )
+            and
+            any(
+                term in normalized.split()
+                for term in [
+                    "highest",
+                    "lowest",
+                    "least",
+                    "worst",
+                    "weakest",
+                    "best",
+                    "strongest",
+                ]
+            )
+        )
+
+
+        if (
+            not self._looks_like_follow_up(
+                normalized,
+                new_entities,
+                metric_switch,
+            )
+            and not direction_only_follow_up
+            and not climate_region_ranking_follow_up
         ):
 
             return None
@@ -445,6 +508,78 @@ class ContextualQuestionResolver:
         ascending = (
             previous_spec.ascending
         )
+
+
+        # ----------------------------------------------------
+        # Climate geographic ranking continuation
+        #
+        # Previous:
+        # "How risky is flooding in the North West?"
+        #
+        # Follow-up:
+        # "Which region is most affected?"
+        #
+        # Preserve the climate event, remove the previous
+        # zone restriction, and rank across zones.
+        # ----------------------------------------------------
+
+        if climate_region_ranking_follow_up:
+
+            operation = (
+                Operation.RANK
+            )
+
+            group_by = (
+                "zone"
+            )
+
+            top_n = (
+                10
+            )
+
+            ascending = (
+                False
+            )
+
+            filters.pop(
+                "zone",
+                None,
+            )
+
+
+        # ----------------------------------------------------
+        # Direction-only ranking continuation
+        #
+        # Previous:
+        # "Which states have the highest yields?"
+        #
+        # Follow-up:
+        # "And which have the lowest?"
+        #
+        # Preserve metric, filters and grouping while
+        # replacing only ranking direction.
+        # ----------------------------------------------------
+
+        if direction_only_follow_up:
+
+            operation = (
+                Operation.RANK
+            )
+
+            top_n = (
+                previous_spec.top_n
+                or 10
+            )
+
+            ascending = any(
+                term in normalized.split()
+                for term in [
+                    "lowest",
+                    "least",
+                    "worst",
+                    "weakest",
+                ]
+            )
 
 
         # ----------------------------------------------------

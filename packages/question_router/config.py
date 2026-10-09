@@ -107,6 +107,12 @@ UNSUPPORTED_LANGUAGE = {
         "good crop to plant",
         "worth planting",
     ],
+
+    "production_potential": [
+        "production potential",
+        "agronomic potential",
+        "productive potential",
+    ],
 }
 
 
@@ -293,6 +299,8 @@ METRIC_LANGUAGE = {
             "how much of the harvest is sold",
             "how much is sold",
             "commercialization share",
+            "commercially oriented",
+            "commercial orientation",
         ],
 
         "keywords": [
@@ -366,10 +374,7 @@ METRIC_LANGUAGE = {
             "food insecurity improve",
         ],
 
-        "keywords": [
-            "food security",
-            "food insecurity",
-        ],
+        "keywords": [],
     },
 
 
@@ -437,7 +442,10 @@ METRIC_LANGUAGE = {
 
         "keywords": [
             "drought",
+            "droughts",
             "flood",
+            "flooding",
+            "floods",
             "temperature",
             "climate",
         ],

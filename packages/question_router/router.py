@@ -1036,6 +1036,26 @@ class QuestionRouter:
         )
     
     
+        climate_geographic_ranking_language = (
+            normalized.startswith(
+                "where "
+            )
+            and
+            any(
+                phrase in normalized
+                for phrase in (
+                    "climate",
+                    "drought",
+                    "droughts",
+                    "flood",
+                    "flooding",
+                    "floods",
+                    "temperature",
+                )
+            )
+        )
+
+
         climate_event_ranking_language = (
             any(
                 phrase in normalized
@@ -1069,6 +1089,13 @@ class QuestionRouter:
 
             group_by = (
                 "planting_extension"
+            )
+
+
+        elif climate_geographic_ranking_language:
+
+            group_by = (
+                "zone"
             )
 
 
@@ -1109,6 +1136,7 @@ class QuestionRouter:
         
         elif (
             crop_prevalence_language
+            or climate_geographic_ranking_language
             or geographic_ranking_language
             or climate_event_ranking_language
             or any(
@@ -1277,6 +1305,48 @@ class QuestionRouter:
                     "yield, commercialization, price context "
                     "and climate conditions for the requested "
                     "geography."
+                ),
+            )
+
+
+        # ----------------------------------------------
+        # Production-potential reframe
+        # ----------------------------------------------
+
+        if (
+            "production_potential"
+            in support_flags
+        ):
+
+            return QuestionInterpretation(
+                question=
+                    question,
+
+                normalized_question=
+                    normalized,
+
+                status=
+                    InterpretationStatus
+                    .REFRAME_REQUIRED,
+
+                entities=
+                    entities,
+
+                support_flags=
+                    support_flags,
+
+                reason=(
+                    "Production or agronomic potential "
+                    "cannot be estimated from the "
+                    "available Wave 5 survey data. "
+                    "Observed completed-harvest yield "
+                    "is descriptive and should not be "
+                    "treated as full agronomic potential."
+                ),
+
+                suggested_reframe=(
+                    "Compare observed completed-harvest "
+                    "median yields across crops instead."
                 ),
             )
 
@@ -1596,6 +1666,8 @@ class QuestionRouter:
                         term
                         in normalized.split()
                         for term in [
+                            "low",
+                            "lower",
                             "lowest",
                             "least",
                             "worst",
