@@ -196,6 +196,28 @@ def main():
         )
 
 
+        flood_answer_text = (
+            flood_payload[
+                "answer_text"
+            ].lower()
+        )
+
+        assert (
+            "among zones"
+            in flood_answer_text
+        )
+
+        assert (
+            "flood"
+            in flood_answer_text
+        )
+
+        assert (
+            "among assessed climate events"
+            not in flood_answer_text
+        )
+
+
         # ====================================================
         # 4. FLOOD CONTEXT -> REGION RANK
         # ====================================================

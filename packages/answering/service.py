@@ -729,10 +729,53 @@ class AnswerService:
 
             elif result.metric_id == "climate_likely_share":
 
-                intro = (
-                    f"Among assessed climate events {context}, "
-                    "the highest shares rated likely or extremely likely were"
+                rank_specification = (
+                    pipeline_result
+                    .interpretation
+                    .question_specification
                 )
+
+                rank_direction = (
+                    "lowest"
+                    if (
+                        rank_specification
+                        is not None
+                        and rank_specification
+                        .ascending
+                    )
+                    else "highest"
+                )
+
+                if result.group_by == "zone":
+
+                    climate_event = (
+                        result.filters.get(
+                            "climate_event"
+                        )
+                    )
+
+                    event_text = (
+                        str(
+                            climate_event
+                        )
+                        if climate_event
+                        else "the reported climate event"
+                    )
+
+                    intro = (
+                        "Among zones meeting the evidence threshold "
+                        f"{context}, the {rank_direction} shares "
+                        "of communities rating "
+                        f"{event_text} as likely or extremely likely were"
+                    )
+
+                else:
+
+                    intro = (
+                        f"Among assessed climate events {context}, "
+                        f"the {rank_direction} shares rated "
+                        "likely or extremely likely were"
+                    )
 
 
             else:
