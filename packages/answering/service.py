@@ -666,10 +666,57 @@ class AnswerService:
                 "median_high_confidence_yield",
             }:
 
-                intro = (
-                    "Among crops meeting the evidence threshold "
-                    f"{context}, the highest observed median yields were"
+                rank_specification = (
+                    pipeline_result
+                    .interpretation
+                    .question_specification
                 )
+
+                rank_direction = (
+                    "lowest"
+                    if (
+                        rank_specification
+                        is not None
+                        and rank_specification
+                        .ascending
+                    )
+                    else "highest"
+                )
+
+                dimension_name = (
+                    self._dimension_name(
+                        result.group_by
+                    )
+                )
+
+                ranked_crop = (
+                    result.filters.get(
+                        "crop"
+                    )
+                )
+
+                if (
+                    ranked_crop
+                    and result.group_by
+                    == "state"
+                ):
+
+                    intro = (
+                        f"For {ranked_crop}, the "
+                        f"{dimension_name} with the "
+                        f"{rank_direction} observed "
+                        "median yields were"
+                    )
+
+                else:
+
+                    intro = (
+                        f"Among {dimension_name} meeting "
+                        "the evidence threshold "
+                        f"{context}, the "
+                        f"{rank_direction} observed "
+                        "median yields were"
+                    )
 
 
             elif result.metric_id == "crop_seller_rate":
