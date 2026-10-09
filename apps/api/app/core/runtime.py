@@ -24,6 +24,13 @@ from packages.data_release.loader import (
     AgDAReleaseLoader,
 )
 
+
+from packages.data_sources import (
+    SourceRegistry,
+    build_source_health_summary,
+    build_source_manifest,
+)
+
 from packages.question_router.router import (
     QuestionRouter,
 )
@@ -73,6 +80,11 @@ class AgDARuntime:
         self.contextual_resolver = None
 
         self.conversation_store = None
+
+
+        self.source_registry = (
+            SourceRegistry()
+        )
 
 
     # --------------------------------------------------------
@@ -253,6 +265,35 @@ class AgDARuntime:
 
 
     # --------------------------------------------------------
+    # External source information
+    # --------------------------------------------------------
+
+    def external_source_manifest(
+        self,
+    ) -> tuple[
+        dict,
+        ...
+    ]:
+
+        return (
+            build_source_manifest(
+                self.source_registry
+            )
+        )
+
+
+    def external_source_health(
+        self,
+    ) -> dict:
+
+        return (
+            build_source_health_summary(
+                self.source_registry
+            )
+        )
+
+
+    # --------------------------------------------------------
     # Health information
     # --------------------------------------------------------
 
@@ -315,6 +356,10 @@ class AgDARuntime:
                     if self.registry
                     else 0
                 ),
+
+
+            "external_sources":
+                self.external_source_health(),
         }
 
 
