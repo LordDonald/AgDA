@@ -37,6 +37,11 @@ from apps.api.app.routes.internal_analytics import (
     router as internal_analytics_router,
 )
 
+
+from apps.api.app.routes.sources import (
+    router as sources_router,
+)
+
 from apps.api.app.routes.entities import (
     router as entities_router,
 )
@@ -179,6 +184,11 @@ app.include_router(
 
 app.include_router(
     internal_analytics_router
+)
+
+
+app.include_router(
+    sources_router
 )
 
 app.include_router(
