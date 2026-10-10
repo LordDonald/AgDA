@@ -44,6 +44,7 @@ from packages.data_sources.providers.fews_market_prices import (
 from packages.data_sources.snapshot_store import (
     FewsSnapshotStore,
     SnapshotStoreError,
+    StoredFewsSnapshot,
     effective_fews_query,
 )
 
@@ -108,6 +109,7 @@ class AgDARuntime:
         self.fews_snapshot_restore_status = "disabled"
         self._fews_snapshot_query = None
         self._fews_snapshot_for_query = None
+        self._fews_market_snapshot: StoredFewsSnapshot | None = None
 
 
     # --------------------------------------------------------
@@ -317,11 +319,24 @@ class AgDARuntime:
             if current == stored.result.snapshot:
                 self._fews_snapshot_query = effective_fews_query(stored.query)
                 self._fews_snapshot_for_query = current
+                self._fews_market_snapshot = stored
             self.fews_snapshot_restore_status = "loaded"
         except (FewsIngestionError, SnapshotStoreError, OSError, ValueError):
             self.fews_snapshot_restore_status = "error"
             # Do not expose filesystem paths or provider/storage error details.
             logger.warning("FEWS snapshot restore failed; retaining existing source state.")
+
+    def market_price_snapshot(self) -> StoredFewsSnapshot | None:
+        """Return accepted local records only while their provenance still matches."""
+        stored = self._fews_market_snapshot
+        if stored is None or self.fews_snapshot_restore_status == "disabled":
+            return None
+        if not self.source_registry.contains(FEWS_MARKET_SOURCE_ID):
+            return None
+        current = self.source_registry.get_snapshot(FEWS_MARKET_SOURCE_ID)
+        if current != stored.result.snapshot:
+            return None
+        return stored
 
     def external_source_manifest(
         self,

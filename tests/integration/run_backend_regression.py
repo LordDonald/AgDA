@@ -54,6 +54,7 @@ TEST_FILES = [
     "test_fews_snapshot_store.py",
     "test_fews_snapshot_runtime.py",
     "test_fews_ingestion_command.py",
+    "test_market_prices_api.py",
     "test_api_observability.py",
     "test_api_health_config.py",
     "test_api_limits.py",

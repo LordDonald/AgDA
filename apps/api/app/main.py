@@ -42,6 +42,10 @@ from apps.api.app.routes.sources import (
     router as sources_router,
 )
 
+from apps.api.app.routes.market_prices import (
+    router as market_prices_router,
+)
+
 from apps.api.app.routes.entities import (
     router as entities_router,
 )
@@ -189,6 +193,10 @@ app.include_router(
 
 app.include_router(
     sources_router
+)
+
+app.include_router(
+    market_prices_router
 )
 
 app.include_router(
