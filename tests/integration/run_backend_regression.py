@@ -49,6 +49,8 @@ TEST_FILES = [
     "test_external_source_registry.py",
     "test_external_source_catalog.py",
     "test_external_source_api.py",
+    "test_fews_market_price_adapter.py",
+    "test_fews_market_price_client.py",
     "test_api_observability.py",
     "test_api_health_config.py",
     "test_api_limits.py",

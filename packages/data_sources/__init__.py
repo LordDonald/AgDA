@@ -1,4 +1,8 @@
-﻿from packages.data_sources.catalog import (
+from packages.data_sources.market_prices import (
+    MarketPriceRecord,
+)
+
+from packages.data_sources.catalog import (
     build_source_health_summary,
     build_source_manifest,
     source_state_manifest,
@@ -20,6 +24,7 @@ from packages.data_sources.registry import (
 
 __all__ = [
     "FreshnessStatus",
+    "MarketPriceRecord",
     "SourceDefinition",
     "SourceRegistry",
     "SourceSnapshot",
