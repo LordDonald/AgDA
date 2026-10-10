@@ -78,3 +78,6 @@ logs/
 
 # Python package metadata
 *.egg-info/
+
+# Local external-source snapshots (separate from immutable Wave 5 releases)
+/data/external/

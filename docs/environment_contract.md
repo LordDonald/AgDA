@@ -100,3 +100,15 @@ Browser -> Next.js `/api/\*` -> FastAPI
 
 the `NEXT\_PUBLIC\_` prefix.
 
+## Optional FEWS snapshot restoration
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `AGDA_FEWS_SNAPSHOT_PATH` | Unset | Opt in to loading a local completed FEWS snapshot at API startup. Prefer an absolute path outside `data/releases/`. |
+| `AGDA_FEWS_STALE_AFTER_HOURS` | `48` | Positive local retrieval-age threshold; independent of observation dates and FEWS publication cadence. |
+
+Startup reads local storage only. Missing or unreadable storage is reported in
+external-source health and does not affect core Wave 5 readiness. See
+[FEWS snapshot persistence](fews_snapshot_persistence.md) for ingestion and
+restoration commands.
+

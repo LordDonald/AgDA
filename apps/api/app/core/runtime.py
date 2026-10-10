@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from packages.analytics.executor import (
     AnalyticsExecutor,
 )
@@ -31,6 +33,20 @@ from packages.data_sources import (
     build_source_manifest,
 )
 
+from packages.data_sources.fews_ingestion import (
+    FewsIngestionError,
+    build_fews_source_definition,
+    restore_fews_market_prices,
+)
+from packages.data_sources.providers.fews_market_prices import (
+    FEWS_MARKET_SOURCE_ID,
+)
+from packages.data_sources.snapshot_store import (
+    FewsSnapshotStore,
+    SnapshotStoreError,
+    effective_fews_query,
+)
+
 from packages.question_router.router import (
     QuestionRouter,
 )
@@ -47,6 +63,9 @@ from packages.question_router.conversation import (
 from apps.api.app.core.settings import (
     settings,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================
@@ -85,6 +104,10 @@ class AgDARuntime:
         self.source_registry = (
             SourceRegistry()
         )
+
+        self.fews_snapshot_restore_status = "disabled"
+        self._fews_snapshot_query = None
+        self._fews_snapshot_for_query = None
 
 
     # --------------------------------------------------------
@@ -239,6 +262,9 @@ class AgDARuntime:
 
         self.ready = True
 
+        # Optional local provenance is separate from Wave 5 readiness.
+        self.reload_fews_snapshot()
+
 
     # --------------------------------------------------------
     # Stop
@@ -268,6 +294,35 @@ class AgDARuntime:
     # External source information
     # --------------------------------------------------------
 
+    def reload_fews_snapshot(self) -> None:
+        """Restore optional local FEWS provenance without contacting the provider."""
+        if settings.fews_snapshot_path is None:
+            self.fews_snapshot_restore_status = "disabled"
+            return
+
+        try:
+            if not self.source_registry.contains(FEWS_MARKET_SOURCE_ID):
+                self.source_registry.register(build_fews_source_definition(
+                    stale_after_hours=settings.fews_stale_after_hours,
+                ))
+            stored = restore_fews_market_prices(
+                store=FewsSnapshotStore(settings.fews_snapshot_path),
+                registry=self.source_registry,
+                stale_after_hours=settings.fews_stale_after_hours,
+            )
+            if stored is None:
+                self.fews_snapshot_restore_status = "missing"
+                return
+            current = self.source_registry.get_snapshot(FEWS_MARKET_SOURCE_ID)
+            if current == stored.result.snapshot:
+                self._fews_snapshot_query = effective_fews_query(stored.query)
+                self._fews_snapshot_for_query = current
+            self.fews_snapshot_restore_status = "loaded"
+        except (FewsIngestionError, SnapshotStoreError, OSError, ValueError):
+            self.fews_snapshot_restore_status = "error"
+            # Do not expose filesystem paths or provider/storage error details.
+            logger.warning("FEWS snapshot restore failed; retaining existing source state.")
+
     def external_source_manifest(
         self,
     ) -> tuple[
@@ -275,22 +330,23 @@ class AgDARuntime:
         ...
     ]:
 
-        return (
-            build_source_manifest(
-                self.source_registry
-            )
-        )
+        manifest = build_source_manifest(self.source_registry)
+        if self._fews_snapshot_query is not None:
+            current = self.source_registry.get_snapshot(FEWS_MARKET_SOURCE_ID)
+            if current == self._fews_snapshot_for_query:
+                for source in manifest:
+                    if source["source_id"] == FEWS_MARKET_SOURCE_ID:
+                        source["query"] = dict(self._fews_snapshot_query)
+        return manifest
 
 
     def external_source_health(
         self,
     ) -> dict:
 
-        return (
-            build_source_health_summary(
-                self.source_registry
-            )
-        )
+        summary = build_source_health_summary(self.source_registry)
+        summary["snapshot_restore_status"] = self.fews_snapshot_restore_status
+        return summary
 
 
     # --------------------------------------------------------

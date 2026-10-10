@@ -254,6 +254,42 @@ def _json_scalar(value: Any) -> str:
     raise TypeError(f"Unsupported snapshot value: {type(value).__name__}")
 
 
+def build_fews_snapshot(
+    query: FewsMarketPriceQuery,
+    records: tuple[MarketPriceRecord, ...],
+    retrieved_at: datetime,
+) -> SourceSnapshot | None:
+    """Create the same content identity for live and persisted normalized data."""
+    if retrieved_at.tzinfo is None or retrieved_at.utcoffset() is None:
+        raise ValueError("retrieved_at must be timezone-aware.")
+    retrieved_at = retrieved_at.astimezone(timezone.utc)
+    if not records:
+        return None
+    scope = parse_qs(urlsplit(query.url(1)).query, keep_blank_values=True)
+    version_payload = {
+        "scope": {key: scope[key] for key in _SCOPE_FIELDS if key in scope},
+        "records": [asdict(record) for record in records],
+    }
+    digest = sha256(json.dumps(
+        version_payload, sort_keys=True, separators=(",", ":"),
+        default=_json_scalar, allow_nan=False,
+    ).encode("utf-8")).hexdigest()
+    return SourceSnapshot(
+        source_id=FEWS_MARKET_SOURCE_ID,
+        dataset_version=f"fews-monthly-v1:{digest}",
+        observed_from=datetime.combine(
+            min(record.period_date for record in records), time.min, timezone.utc,
+        ),
+        observed_to=datetime.combine(
+            max(record.period_date for record in records), time.min, timezone.utc,
+        ),
+        # Phase 26A freshness measures AgDA's successful local refresh.
+        refreshed_at=retrieved_at,
+        retrieved_at=retrieved_at,
+        record_count=len(records),
+    )
+
+
 class FewsMarketPriceClient:
     def __init__(
         self, *, limits: FewsClientLimits | None = None,
@@ -325,30 +361,7 @@ class FewsMarketPriceClient:
         ):
             raise ValueError("clock must return a timezone-aware datetime.")
         retrieved_at = retrieved_at.astimezone(timezone.utc)
-        snapshot = None
-        if records:
-            version_payload = {
-                "scope": {key: scope[key] for key in _SCOPE_FIELDS if key in scope},
-                "records": [asdict(record) for record in records],
-            }
-            digest = sha256(json.dumps(
-                version_payload, sort_keys=True, separators=(",", ":"),
-                default=_json_scalar, allow_nan=False,
-            ).encode("utf-8")).hexdigest()
-            snapshot = SourceSnapshot(
-                source_id=FEWS_MARKET_SOURCE_ID,
-                dataset_version=f"fews-monthly-v1:{digest}",
-                observed_from=datetime.combine(
-                    min(record.period_date for record in records), time.min, timezone.utc,
-                ),
-                observed_to=datetime.combine(
-                    max(record.period_date for record in records), time.min, timezone.utc,
-                ),
-                # Phase 26A freshness measures AgDA's successful local refresh.
-                refreshed_at=retrieved_at,
-                retrieved_at=retrieved_at,
-                record_count=len(records),
-            )
+        snapshot = build_fews_snapshot(query, tuple(records), retrieved_at)
         return FewsFetchResult(
             records=tuple(records), snapshot=snapshot, retrieved_at=retrieved_at,
             pages_fetched=pages_fetched, requests_made=requests_made,
