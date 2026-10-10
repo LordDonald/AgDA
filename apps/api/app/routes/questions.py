@@ -24,6 +24,13 @@ from packages.contracts.question import (
     InterpretationStatus,
 )
 
+from packages.data_sources.external_executor import (
+    ExternalExecutionStatus,
+)
+from packages.data_sources.external_router import (
+    ExternalRouteStatus,
+)
+
 from apps.api.app.core.observability import (
     get_request_id,
 )
@@ -41,6 +48,197 @@ router = APIRouter(
     prefix="/v1",
     tags=["questions"],
 )
+
+
+def _external_answer_text(
+    external_route,
+    execution,
+) -> str:
+
+    if execution.reason:
+        return execution.reason
+
+    rows = execution.rows
+
+    if (
+        execution.metric_id
+        == "market_price_ngn_per_kg"
+    ):
+        if execution.operation == "rank":
+            direction = (
+                "lowest"
+                if any(
+                    term
+                    in external_route.normalized_question
+                    for term in (
+                        "lowest",
+                        "cheapest",
+                        "least expensive",
+                        "bottom",
+                    )
+                )
+                else "highest"
+            )
+
+            details = "; ".join(
+                (
+                    f"{row['rank']}. "
+                    f"{row['market']}"
+                    + (
+                        f", {row['admin_1']}"
+                        if row.get("admin_1")
+                        else ""
+                    )
+                    + f": {row['value']} {row['unit']}"
+                )
+                for row in rows
+            )
+
+            period = (
+                rows[0]["period_date"]
+                if rows
+                else "the saved period"
+            )
+
+            return (
+                f"Using the saved FEWS NET market-price "
+                f"snapshot for {period}, the {direction} "
+                f"observed retail maize prices are: "
+                f"{details}. These are historical observed "
+                f"prices, not live prices."
+            )
+
+        row = rows[0]
+
+        return (
+            f"The saved FEWS NET observation for "
+            f"{row['market']} on {row['period_date']} "
+            f"is {row['value']} {row['unit']} for "
+            f"{row['product']}. This is a historical "
+            f"observed market price, not a live price."
+        )
+
+    if (
+        execution.metric_id
+        == "forecast_precipitation_mm"
+    ):
+        row = rows[0]
+
+        if execution.operation == "sum":
+            return (
+                f"Total forecast precipitation across the "
+                f"saved forecast window is {row['total']} "
+                f"{row['unit']}. This is forecast weather, "
+                f"not measured rainfall."
+            )
+
+        if row["rain_expected"]:
+            return (
+                f"Yes. The saved Open-Meteo/ECMWF forecast "
+                f"shows precipitation above 0 mm in "
+                f"{row['rainy_hours']} of "
+                f"{row['hours_with_values']} forecast hours. "
+                f"This is a forecast, not an observation."
+            )
+
+        return (
+            f"No precipitation above 0 mm appears in the "
+            f"{row['hours_with_values']} forecast hours "
+            f"with available values. This is a forecast, "
+            f"not an observation."
+        )
+
+    row = rows[0]
+
+    if (
+        execution.metric_id
+        == "forecast_temperature_2m_c"
+    ):
+        measure = "temperature"
+    else:
+        measure = "relative humidity"
+
+    return (
+        f"The saved Open-Meteo/ECMWF forecast {measure} "
+        f"ranges from {row['minimum']} {row['unit']} at "
+        f"{row['minimum_valid_at']} to "
+        f"{row['maximum']} {row['unit']} at "
+        f"{row['maximum_valid_at']}. These are forecast "
+        f"values, not observations."
+    )
+
+
+def _external_answer(
+    question: str,
+    external_route,
+    execution,
+) -> AgDAAnswer:
+
+    source = next(
+        (
+            item
+            for item
+            in runtime.external_source_manifest()
+            if item["source_id"]
+            == execution.source_id
+        ),
+        None,
+    )
+
+    result = {
+        "metric_id":
+            execution.metric_id,
+        "source_id":
+            execution.source_id,
+        "operation":
+            execution.operation,
+        "source":
+            source,
+        "rows": [
+            dict(row)
+            for row
+            in execution.rows
+        ],
+    }
+
+    if (
+        execution.status
+        == ExternalExecutionStatus.ANSWERED
+    ):
+        status = "answered"
+
+    elif (
+        execution.status
+        == ExternalExecutionStatus.NEEDS_CLARIFICATION
+    ):
+        status = "needs_clarification"
+
+    else:
+        status = "unsupported"
+
+    data_version = (
+        source.get("dataset_version")
+        if source is not None
+        else None
+    )
+
+    return AgDAAnswer(
+        status=status,
+        question=question,
+        answer_text=_external_answer_text(
+            external_route,
+            execution,
+        ),
+        question_specification=None,
+        result=result,
+        evidence=None,
+        visualization=None,
+        data_version=(
+            data_version
+            or f"external:{execution.source_id}"
+        ),
+        metric_version=None,
+    )
 
 
 @router.post(
@@ -92,45 +290,109 @@ def ask_question(
         )
 
 
-        answer, pipeline_result = (
+        external_route = (
             runtime
-            .answer_service
-            .answer_with_pipeline_result(
-                question=
-                    request.question,
-
-                max_rank_items=
-                    request.max_rank_items,
-
-                context=
-                    context,
+            .external_question_router
+            .route(
+                request.question
             )
-        )
-
-
-        interpretation = (
-            pipeline_result
-            .interpretation
         )
 
 
         if (
-            runtime.conversation_store
-            is not None
-            and interpretation.status
-            == InterpretationStatus.INTERPRETED
-            and interpretation
-            .question_specification
-            is not None
-            ):
+            external_route.status
+            == ExternalRouteStatus.AMBIGUOUS
+        ):
 
-            runtime.conversation_store.put(
-                conversation_id=
-                    conversation_id,
-
-                interpretation=
-                    interpretation,
+            answer = AgDAAnswer(
+                status="reframe_required",
+                question=request.question,
+                answer_text=(
+                    external_route.reason
+                    or
+                    "Ask about one external measure at a time."
+                ),
+                question_specification=None,
+                result=None,
+                evidence=None,
+                visualization=None,
+                data_version="external_mixed",
+                metric_version=None,
             )
+
+
+        elif (
+            external_route.status
+            == ExternalRouteStatus.ROUTED
+        ):
+
+            execution = (
+                runtime
+                .external_metric_executor
+                .execute(
+                    external_route,
+
+                    market_snapshot=
+                        runtime
+                        .market_price_snapshot(),
+
+                    weather_snapshot=
+                        runtime
+                        .weather_forecast_snapshot(),
+
+                    max_items=
+                        request.max_rank_items,
+                )
+            )
+
+            answer = _external_answer(
+                request.question,
+                external_route,
+                execution,
+            )
+
+
+        else:
+
+            answer, pipeline_result = (
+                runtime
+                .answer_service
+                .answer_with_pipeline_result(
+                    question=
+                        request.question,
+
+                    max_rank_items=
+                        request.max_rank_items,
+
+                    context=
+                        context,
+                )
+            )
+
+
+            interpretation = (
+                pipeline_result
+                .interpretation
+            )
+
+
+            if (
+                runtime.conversation_store
+                is not None
+                and interpretation.status
+                == InterpretationStatus.INTERPRETED
+                and interpretation
+                .question_specification
+                is not None
+                ):
+
+                runtime.conversation_store.put(
+                    conversation_id=
+                        conversation_id,
+
+                    interpretation=
+                        interpretation,
+                )
 
 
         answer = answer.model_copy(

@@ -33,6 +33,16 @@ from packages.data_sources import (
     build_source_manifest,
 )
 
+from packages.data_sources.external_executor import (
+    ExternalMetricExecutor,
+)
+from packages.data_sources.external_metrics import (
+    build_external_metric_registry,
+)
+from packages.data_sources.external_router import (
+    ExternalQuestionRouter,
+)
+
 from packages.data_sources.fews_ingestion import (
     FewsIngestionError,
     build_fews_source_definition,
@@ -119,6 +129,23 @@ class AgDARuntime:
 
         self.source_registry = (
             SourceRegistry()
+        )
+
+
+        self.external_metric_registry = (
+            build_external_metric_registry()
+        )
+
+        self.external_question_router = (
+            ExternalQuestionRouter(
+                self.external_metric_registry
+            )
+        )
+
+        self.external_metric_executor = (
+            ExternalMetricExecutor(
+                self.external_metric_registry
+            )
         )
 
         self.fews_snapshot_restore_status = "disabled"
