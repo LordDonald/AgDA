@@ -48,6 +48,21 @@ from packages.data_sources.snapshot_store import (
     effective_fews_query,
 )
 
+from packages.data_sources.weather_ingestion import (
+    WeatherIngestionError,
+    restore_weather_forecast,
+)
+from packages.data_sources.providers.open_meteo_forecast import (
+    OPEN_METEO_FORECAST_SOURCE_ID,
+)
+from packages.data_sources.weather_snapshot_store import (
+    StoredWeatherSnapshot,
+    WeatherSnapshotStore,
+    WeatherSnapshotStoreError,
+    effective_open_meteo_query,
+)
+
+
 from packages.question_router.router import (
     QuestionRouter,
 )
@@ -110,6 +125,11 @@ class AgDARuntime:
         self._fews_snapshot_query = None
         self._fews_snapshot_for_query = None
         self._fews_market_snapshot: StoredFewsSnapshot | None = None
+
+        self.weather_snapshot_restore_status = "disabled"
+        self._weather_snapshot_query = None
+        self._weather_snapshot_for_query = None
+        self._weather_forecast_snapshot: StoredWeatherSnapshot | None = None
 
 
     # --------------------------------------------------------
@@ -266,6 +286,7 @@ class AgDARuntime:
 
         # Optional local provenance is separate from Wave 5 readiness.
         self.reload_fews_snapshot()
+        self.reload_weather_snapshot()
 
 
     # --------------------------------------------------------
@@ -326,6 +347,80 @@ class AgDARuntime:
             # Do not expose filesystem paths or provider/storage error details.
             logger.warning("FEWS snapshot restore failed; retaining existing source state.")
 
+    def reload_weather_snapshot(self) -> None:
+        """Restore optional local weather provenance without contacting the provider."""
+        if settings.weather_snapshot_path is None:
+            self.weather_snapshot_restore_status = "disabled"
+            return
+
+        try:
+            stored = restore_weather_forecast(
+                store=WeatherSnapshotStore(
+                    settings.weather_snapshot_path
+                ),
+                registry=self.source_registry,
+                stale_after_hours=
+                    settings.weather_stale_after_hours,
+            )
+
+            if stored is None:
+                self.weather_snapshot_restore_status = "missing"
+                return
+
+            current = self.source_registry.get_snapshot(
+                OPEN_METEO_FORECAST_SOURCE_ID
+            )
+
+            if current == stored.result.snapshot:
+                self._weather_snapshot_query = (
+                    effective_open_meteo_query(
+                        stored.query
+                    )
+                )
+                self._weather_snapshot_for_query = current
+                self._weather_forecast_snapshot = stored
+
+            self.weather_snapshot_restore_status = "loaded"
+
+        except (
+            WeatherIngestionError,
+            WeatherSnapshotStoreError,
+            OSError,
+            ValueError,
+        ):
+            self.weather_snapshot_restore_status = "error"
+            logger.warning(
+                "Weather snapshot restore failed; "
+                "retaining existing source state."
+            )
+
+
+    def weather_forecast_snapshot(self) -> StoredWeatherSnapshot | None:
+        """Return accepted local weather records while provenance still matches."""
+        stored = self._weather_forecast_snapshot
+
+        if (
+            stored is None
+            or self.weather_snapshot_restore_status
+            == "disabled"
+        ):
+            return None
+
+        if not self.source_registry.contains(
+            OPEN_METEO_FORECAST_SOURCE_ID
+        ):
+            return None
+
+        current = self.source_registry.get_snapshot(
+            OPEN_METEO_FORECAST_SOURCE_ID
+        )
+
+        if current != stored.result.snapshot:
+            return None
+
+        return stored
+
+
     def market_price_snapshot(self) -> StoredFewsSnapshot | None:
         """Return accepted local records only while their provenance still matches."""
         stored = self._fews_market_snapshot
@@ -352,6 +447,22 @@ class AgDARuntime:
                 for source in manifest:
                     if source["source_id"] == FEWS_MARKET_SOURCE_ID:
                         source["query"] = dict(self._fews_snapshot_query)
+
+        if self._weather_snapshot_query is not None:
+            current = self.source_registry.get_snapshot(
+                OPEN_METEO_FORECAST_SOURCE_ID
+            )
+
+            if current == self._weather_snapshot_for_query:
+                for source in manifest:
+                    if (
+                        source["source_id"]
+                        == OPEN_METEO_FORECAST_SOURCE_ID
+                    ):
+                        source["query"] = dict(
+                            self._weather_snapshot_query
+                        )
+
         return manifest
 
 
@@ -360,7 +471,16 @@ class AgDARuntime:
     ) -> dict:
 
         summary = build_source_health_summary(self.source_registry)
-        summary["snapshot_restore_status"] = self.fews_snapshot_restore_status
+
+        # Existing compatibility field remains FEWS-specific.
+        summary["snapshot_restore_status"] = (
+            self.fews_snapshot_restore_status
+        )
+
+        summary["weather_snapshot_restore_status"] = (
+            self.weather_snapshot_restore_status
+        )
+
         return summary
 
 

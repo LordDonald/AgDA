@@ -150,6 +150,10 @@ class AppSettings:
 
     fews_stale_after_hours: int = 48
 
+    weather_snapshot_path: str | None = None
+
+    weather_stale_after_hours: int = 6
+
 
     @classmethod
     def from_env(
@@ -381,6 +385,19 @@ class AppSettings:
 
             fews_stale_after_hours=_read_positive_int(
                 "AGDA_FEWS_STALE_AFTER_HOURS", 48,
+            ),
+
+            weather_snapshot_path=(
+                os.getenv(
+                    "AGDA_WEATHER_SNAPSHOT_PATH",
+                    "",
+                ).strip()
+                or None
+            ),
+
+            weather_stale_after_hours=_read_positive_int(
+                "AGDA_WEATHER_STALE_AFTER_HOURS",
+                6,
             ),
         )
 
