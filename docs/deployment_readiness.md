@@ -206,6 +206,16 @@ Recommended production values:
 
 \- `AGDA\_SERVICE\_VERSION=0.1.0`
 
+Optional external-data runtime values when those sources are enabled:
+
+\- `AGDA\_FEWS\_SNAPSHOT\_PATH=<persistent absolute path>`
+
+\- `AGDA\_FEWS\_STALE\_AFTER\_HOURS=48`
+
+\- `AGDA\_WEATHER\_SNAPSHOT\_PATH=<persistent absolute path>`
+
+\- `AGDA\_WEATHER\_STALE\_AFTER\_HOURS=6`
+
 
 
 Real environment files and secrets must not be committed.
@@ -449,6 +459,30 @@ Not required for normal production runtime:
 \---
 
 
+
+
+### External snapshot rollout
+
+FEWS and weather snapshot stores are runtime data, not part of the immutable
+Wave 5 release and not normal Git deployment artifacts.
+
+When external sources are enabled in staging or production:
+
+1. Provision persistent storage that survives API restarts and redeployments.
+2. Place only completed FEWS and/or weather snapshot stores on that storage.
+3. Configure the corresponding `AGDA_*_SNAPSHOT_PATH` with an absolute path.
+4. Keep snapshot paths outside `data/releases/`.
+5. Start the API normally. Startup restoration must use local storage only and
+   must not contact FEWS NET or Open-Meteo.
+6. Verify `/v1/ready` remains ready for the Wave 5 core service.
+7. Verify `/v1/sources` reports the expected external snapshot restoration
+   status and freshness.
+8. Smoke-test one FEWS question and one weather question through the normal
+   `/v1/questions` path.
+9. Confirm stale or unavailable external data does not make Wave 5 unready.
+
+External-source freshness is provenance information, not a replacement for the
+underlying observation or forecast-valid timestamps.
 
 \## 12. Remaining Pre-Launch Work
 

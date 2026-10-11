@@ -100,3 +100,28 @@ Browser -> Next.js `/api/\*` -> FastAPI
 
 the `NEXT\_PUBLIC\_` prefix.
 
+## Optional external snapshot restoration
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `AGDA_FEWS_SNAPSHOT_PATH` | Unset | Opt in to loading a completed FEWS market-price snapshot at API startup. Prefer an absolute persistent path outside `data/releases/`. |
+| `AGDA_FEWS_STALE_AFTER_HOURS` | `48` | Positive local retrieval-age threshold; independent of observation dates and FEWS publication cadence. |
+| `AGDA_WEATHER_SNAPSHOT_PATH` | Unset | Opt in to loading a completed Open-Meteo weather-forecast snapshot at API startup. Prefer an absolute persistent path outside `data/releases/`. |
+| `AGDA_WEATHER_STALE_AFTER_HOURS` | `6` | Positive local retrieval-age threshold; independent of forecast-valid time, forecast accuracy, and model issue age. |
+
+Startup restoration reads local storage only and does not make provider HTTP
+requests. Missing, unreadable, or stale external snapshots are reported through
+external-source health and do not affect core Wave 5 readiness.
+
+`/v1/ready` remains authoritative for the core Wave 5 analytical service.
+Use `/v1/sources` to inspect FEWS and Open-Meteo availability, freshness, and
+snapshot restoration status.
+
+In staging and production, any configured snapshot path must survive application
+restarts if the external source is expected to remain available. Do not place
+external snapshot stores inside `data/releases/`, and do not silently copy their
+data into the Wave 5 release.
+
+See [FEWS snapshot persistence](fews_snapshot_persistence.md) for FEWS ingestion
+and restoration commands.
+

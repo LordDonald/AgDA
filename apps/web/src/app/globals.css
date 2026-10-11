@@ -418,6 +418,185 @@ button {
   font-size: 13px;
 }
 
+
+.externalProvenance {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.externalProvenanceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.externalProvenanceHeader h3 {
+  margin: 3px 0 4px;
+  font-size: 16px;
+}
+
+.externalProvenanceHeader p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.externalSourceEyebrow {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.externalSourceBadges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sourceTypeBadge,
+.freshnessBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sourceTypeBadge {
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+.freshnessBadge {
+  border: 1px solid var(--border);
+}
+
+.freshness-fresh {
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+.freshness-stale {
+  background: #fff4df;
+  color: #8a5400;
+}
+
+.freshness-unknown {
+  background: #f3f4f3;
+  color: var(--muted);
+}
+
+.externalProvenanceGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 14px 20px;
+  margin-top: 18px;
+}
+
+.externalProvenanceGrid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.externalProvenanceGrid strong {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.provenanceLabel {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.staleSourceNotice {
+  margin-top: 16px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: #fff4df;
+  color: #735000;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.externalQueryScope {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+}
+
+.queryScopeItems {
+  display: flex;
+  gap: 7px 14px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.queryScopeItems b {
+  color: inherit;
+  text-transform: capitalize;
+}
+
+.externalMethodology {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.externalMethodology summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.externalMethodology p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.externalMethodology a {
+  color: var(--green-dark);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .externalProvenanceHeader {
+    flex-direction: column;
+  }
+
+  .externalSourceBadges {
+    justify-content: flex-start;
+  }
+
+  .externalProvenanceGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 .provenance {
   display: flex;
   gap: 15px;
