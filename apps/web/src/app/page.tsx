@@ -53,6 +53,39 @@ type Reframe = {
 };
 
 
+
+type ExternalSource = {
+  source_id: string;
+  display_name: string;
+  source_type: string;
+  provider: string;
+  geographic_scope: string;
+  methodology_note: string;
+  attribution: string;
+  license_name: string | null;
+  source_url: string | null;
+  expected_refresh_hours: number | null;
+  stale_after_hours: number | null;
+  freshness: "fresh" | "stale" | "unknown";
+  dataset_version: string | null;
+  observed_from: string | null;
+  observed_to: string | null;
+  refreshed_at: string | null;
+  retrieved_at: string | null;
+  record_count: number | null;
+  query?: Record<string, unknown>;
+};
+
+
+type ExternalAnswerResult = {
+  metric_id: string;
+  source_id: string;
+  operation: string;
+  source: ExternalSource | null;
+  rows: Record<string, unknown>[];
+};
+
+
 type AgDAAnswer = {
   status: string;
 
@@ -242,6 +275,368 @@ function buildClarificationQuestion(
 
       return null;
   }
+}
+
+
+
+function externalResult(
+  answer: AgDAAnswer,
+): ExternalAnswerResult | null {
+
+  if (
+    answer.result === null
+    ||
+    Array.isArray(
+      answer.result
+    )
+    ||
+    typeof answer.result !== "object"
+  ) {
+    return null;
+  }
+
+
+  const candidate = (
+    answer.result as
+      Record<string, unknown>
+  );
+
+
+  if (
+    typeof candidate.source_id
+      !== "string"
+    ||
+    typeof candidate.metric_id
+      !== "string"
+    ||
+    !Array.isArray(
+      candidate.rows
+    )
+  ) {
+    return null;
+  }
+
+
+  return (
+    candidate as unknown as ExternalAnswerResult
+  );
+}
+
+
+function formatSourceDateTime(
+  value: string | null,
+) {
+
+  if (!value) {
+    return "Not available";
+  }
+
+
+  const date = new Date(
+    value
+  );
+
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return value;
+  }
+
+
+  return date.toLocaleString(
+    undefined,
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "UTC",
+    }
+  ) + " UTC";
+}
+
+
+function querySummary(
+  query:
+    Record<string, unknown>
+    | undefined,
+) {
+
+  if (!query) {
+    return [];
+  }
+
+
+  return Object.entries(
+    query
+  ).map(
+    ([key, value]) => ({
+      key:
+        key.replaceAll(
+          "_",
+          " "
+        ),
+      value:
+        String(value),
+    })
+  );
+}
+
+
+function ExternalProvenancePanel({
+  answer,
+}: {
+  answer: AgDAAnswer;
+}) {
+
+  const result = externalResult(
+    answer
+  );
+
+
+  const source = (
+    result?.source
+  );
+
+
+  if (!source) {
+    return null;
+  }
+
+
+  const isForecast = (
+    source.source_type
+    === "weather_forecast"
+  );
+
+
+  const periodLabel = (
+    isForecast
+      ? "Forecast window"
+      : "Observation period"
+  );
+
+
+  const sourceKind = (
+    isForecast
+      ? "Weather forecast"
+      : "Historical observation"
+  );
+
+
+  const queryEntries = (
+    querySummary(
+      source.query
+    )
+  );
+
+
+  return (
+
+    <section
+      className="externalProvenance"
+      aria-label="External data provenance"
+    >
+
+      <div className="externalProvenanceHeader">
+
+        <div>
+
+          <div className="externalSourceEyebrow">
+            External data source
+          </div>
+
+          <h3>
+            {source.display_name}
+          </h3>
+
+          <p>
+            {source.provider}
+            {" \u2014 "}
+            {source.geographic_scope}
+          </p>
+
+        </div>
+
+
+        <div className="externalSourceBadges">
+
+          <span className="sourceTypeBadge">
+            {sourceKind}
+          </span>
+
+          <span
+            className={
+              "freshnessBadge " +
+              `freshness-${source.freshness}`
+            }
+          >
+            {source.freshness}
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div className="externalProvenanceGrid">
+
+        <div>
+          <span className="provenanceLabel">
+            {periodLabel}
+          </span>
+
+          <strong>
+            {
+              formatSourceDateTime(
+                source.observed_from
+              )
+            }
+            {" to "}
+            {
+              formatSourceDateTime(
+                source.observed_to
+              )
+            }
+          </strong>
+        </div>
+
+
+        <div>
+          <span className="provenanceLabel">
+            Retrieved by AgDA
+          </span>
+
+          <strong>
+            {
+              formatSourceDateTime(
+                source.retrieved_at
+              )
+            }
+          </strong>
+        </div>
+
+
+        <div>
+          <span className="provenanceLabel">
+            Records
+          </span>
+
+          <strong>
+            {
+              source.record_count
+              ?? "Not available"
+            }
+          </strong>
+        </div>
+
+
+        <div>
+          <span className="provenanceLabel">
+            Freshness threshold
+          </span>
+
+          <strong>
+            {
+              source.stale_after_hours !== null
+                ? `${source.stale_after_hours} hours since retrieval`
+                : "Not configured"
+            }
+          </strong>
+        </div>
+
+      </div>
+
+
+      {source.freshness === "stale" && (
+
+        <div className="staleSourceNotice">
+          This saved source is older than
+          its configured freshness threshold.
+          The underlying data is still shown
+          with its original time period.
+        </div>
+
+      )}
+
+
+      {queryEntries.length > 0 && (
+
+        <div className="externalQueryScope">
+
+          <span className="provenanceLabel">
+            Saved query scope
+          </span>
+
+          <div className="queryScopeItems">
+
+            {queryEntries.map(
+              ({ key, value }) => (
+
+                <span key={key}>
+                  <b>{key}:</b>{" "}
+                  {value}
+                </span>
+
+              )
+            )}
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      <details className="externalMethodology">
+
+        <summary>
+          Source methodology and attribution
+        </summary>
+
+        <p>
+          {source.methodology_note}
+        </p>
+
+        <p>
+          Attribution:{" "}
+          {source.attribution}
+          {source.license_name
+            ? ` ? ${source.license_name}`
+            : ""}
+        </p>
+
+        {source.dataset_version && (
+
+          <p>
+            Snapshot version:{" "}
+            <code>
+              {source.dataset_version}
+            </code>
+          </p>
+
+        )}
+
+        {source.source_url && (
+
+          <p>
+            <a
+              href={source.source_url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View provider source
+            </a>
+          </p>
+
+        )}
+
+      </details>
+
+    </section>
+
+  );
 }
 
 
@@ -625,6 +1020,11 @@ function AnswerCard({
         />
 
       )}
+
+
+      <ExternalProvenancePanel
+        answer={answer}
+      />
 
 
       {answer.evidence && (
