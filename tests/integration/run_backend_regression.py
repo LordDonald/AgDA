@@ -57,6 +57,7 @@ TEST_FILES = [
     "test_external_refresh.py",
     "test_external_refresh_command.py",
     "test_external_refresh_orchestration.py",
+    "test_external_refresh_trigger.py",
     "test_fews_market_price_adapter.py",
     "test_fews_market_price_client.py",
     "test_fews_snapshot_store.py",

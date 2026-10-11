@@ -345,6 +345,202 @@ class InternalExternalSourceReloadTests(
         )
 
 
+    def test_weather_refresh_adopts_exact_snapshot(self):
+        outcome = route_module.ExternalRefreshOutcome(
+            source_id="open_meteo_forecast",
+            status=route_module.ExternalRefreshStatus.UPDATED,
+            previous_snapshot_id=B,
+            active_snapshot_id=C,
+            retrieved_at=None,
+            record_count=72,
+        )
+
+        self.runtime.weather_id = B
+        self.runtime.next_weather_id = C
+        self.runtime.next_weather_status = "loaded"
+
+        with patch.object(
+            route_module,
+            "_refresh_weather",
+            return_value=outcome,
+        ):
+            response = self.client.post(
+                "/v1/internal/external-sources/refresh",
+                json={
+                    "source": "weather",
+                },
+                headers=self.headers(),
+            )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+            response.text,
+        )
+
+        payload = response.json()
+
+        self.assertEqual(
+            payload["status"],
+            "refreshed_and_adopted",
+        )
+
+        self.assertEqual(
+            payload["refresh"][
+                "active_snapshot_id"
+            ],
+            C,
+        )
+
+        self.assertEqual(
+            payload["reload"][
+                "after_snapshot_id"
+            ],
+            C,
+        )
+
+        self.assertEqual(
+            self.runtime.weather_reload_calls,
+            1,
+        )
+
+    def test_failed_weather_refresh_does_not_reload(self):
+        outcome = route_module.ExternalRefreshOutcome(
+            source_id="open_meteo_forecast",
+            status=route_module.ExternalRefreshStatus.FAILED_RETAINED,
+            previous_snapshot_id=B,
+            active_snapshot_id=B,
+            retrieved_at=None,
+            record_count=72,
+            error_type="WeatherClientError",
+            error_message="synthetic failure",
+        )
+
+        with patch.object(
+            route_module,
+            "_refresh_weather",
+            return_value=outcome,
+        ):
+            response = self.client.post(
+                "/v1/internal/external-sources/refresh",
+                json={
+                    "source": "weather",
+                },
+                headers=self.headers(),
+            )
+
+        self.assertEqual(
+            response.status_code,
+            503,
+        )
+
+        payload = response.json()
+
+        self.assertEqual(
+            payload["status"],
+            "refresh_not_adopted",
+        )
+
+        self.assertIsNone(
+            payload["reload"]
+        )
+
+        self.assertEqual(
+            self.runtime.weather_reload_calls,
+            0,
+        )
+
+    def test_no_data_fews_refresh_does_not_reload(self):
+        outcome = route_module.ExternalRefreshOutcome(
+            source_id="fews_net_market_prices_ng",
+            status=route_module.ExternalRefreshStatus.NO_DATA_RETAINED,
+            previous_snapshot_id=A,
+            active_snapshot_id=A,
+            retrieved_at=None,
+            record_count=1,
+        )
+
+        with patch.object(
+            route_module,
+            "_refresh_fews",
+            return_value=outcome,
+        ):
+            response = self.client.post(
+                "/v1/internal/external-sources/refresh",
+                json={
+                    "source": "fews",
+                },
+                headers=self.headers(),
+            )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        payload = response.json()
+
+        self.assertEqual(
+            payload["status"],
+            "refresh_not_adopted",
+        )
+
+        self.assertIsNone(
+            payload["reload"]
+        )
+
+        self.assertEqual(
+            self.runtime.fews_reload_calls,
+            0,
+        )
+
+    def test_refresh_adoption_mismatch_returns_503(self):
+        outcome = route_module.ExternalRefreshOutcome(
+            source_id="open_meteo_forecast",
+            status=route_module.ExternalRefreshStatus.UPDATED,
+            previous_snapshot_id=B,
+            active_snapshot_id=C,
+            retrieved_at=None,
+            record_count=72,
+        )
+
+        self.runtime.weather_id = B
+        self.runtime.next_weather_id = A
+        self.runtime.next_weather_status = "loaded"
+
+        with patch.object(
+            route_module,
+            "_refresh_weather",
+            return_value=outcome,
+        ):
+            response = self.client.post(
+                "/v1/internal/external-sources/refresh",
+                json={
+                    "source": "weather",
+                },
+                headers=self.headers(),
+            )
+
+        self.assertEqual(
+            response.status_code,
+            503,
+        )
+
+        payload = response.json()
+
+        self.assertEqual(
+            payload["status"],
+            "adoption_failed",
+        )
+
+        self.assertEqual(
+            payload["reload"][
+                "after_snapshot_id"
+            ],
+            A,
+        )
+
+
 if __name__ == "__main__":
     unittest.main(
         verbosity=2
