@@ -44,6 +44,7 @@ TEST_FILES = [
     "test_product_analytics_persistence.py",
     "test_product_feedback.py",
     "test_internal_analytics_api.py",
+    "test_internal_external_sources_api.py",
     "test_pilot_routing_regressions.py",
     "test_external_source_contract.py",
     "test_external_source_registry.py",

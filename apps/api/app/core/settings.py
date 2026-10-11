@@ -146,6 +146,8 @@ class AppSettings:
 
     allowed_hosts: tuple[str, ...]
 
+    operations_token: str | None = None
+
     fews_snapshot_path: str | None = None
 
     fews_stale_after_hours: int = 48
@@ -307,6 +309,20 @@ class AppSettings:
         )
 
 
+        operations_token_raw = (
+            os.getenv(
+                "AGDA_OPERATIONS_TOKEN"
+            )
+        )
+
+
+        operations_token = (
+            operations_token_raw.strip()
+            if operations_token_raw
+            else None
+        )
+
+
         return cls(
             environment=
                 environment,
@@ -343,6 +359,9 @@ class AppSettings:
 
             internal_analytics_token=
                 internal_analytics_token,
+
+            operations_token=
+                operations_token,
 
             docs_enabled=
                 _read_bool(
