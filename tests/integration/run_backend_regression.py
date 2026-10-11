@@ -53,6 +53,8 @@ TEST_FILES = [
     "test_external_question_router.py",
     "test_external_metric_executor.py",
     "test_external_question_api.py",
+    "test_external_refresh.py",
+    "test_external_refresh_command.py",
     "test_fews_market_price_adapter.py",
     "test_fews_market_price_client.py",
     "test_fews_snapshot_store.py",
