@@ -135,8 +135,9 @@ The remaining restoration sequence is:
 6. Verify the authenticated web analytics proxy, repeat the sanitized environment
    freeze, and replace this blocked status with actual live evidence.
 
-The bootstrap and persistence tool have local contract/safety coverage. They have
-**not** been executed against a live dedicated staging database. Selecting Redis
+The persistence tool has local contract/safety coverage; the SQL bootstrap has
+been statically reviewed. Neither has been executed against a live dedicated
+staging database. Selecting Redis
 introduces the pre-existing conversation-store startup dependency; analytics write
 failures remain non-blocking for answers. Neither changes the non-blocking external
 source readiness contract.
