@@ -30,6 +30,7 @@ from packages.data_sources.external_executor import (
 from packages.data_sources.external_router import (
     ExternalRouteStatus,
 )
+from packages.data_sources.external_provenance import captured_source_manifest
 
 from apps.api.app.core.observability import (
     get_request_id,
@@ -123,13 +124,30 @@ def _external_answer_text(
         == "forecast_precipitation_mm"
     ):
         row = rows[0]
+        coverage = (
+            f" {row['hours_with_values']} of {row['expected_hours']} selected "
+            f"hours have values; {row['missing_hours']} are missing."
+        )
+        scope = (
+            f" The selected precipitation intervals run from {row['interval_start']} "
+            f"to {row['interval_end']} at requested coordinates "
+            f"{row['latitude']}, {row['longitude']}."
+        )
 
         if execution.operation == "sum":
+            label = "Partial sum of available" if row["missing_hours"] else "Total"
             return (
-                f"Total forecast precipitation across the "
-                f"saved forecast window is {row['total']} "
-                f"{row['unit']}. This is forecast weather, "
-                f"not measured rainfall."
+                f"{label} forecast precipitation is {row['total']} {row['unit']}."
+                + coverage + scope
+                + " This is forecast weather, not measured rainfall."
+            )
+
+        if row["rain_expected"] is None:
+            return (
+                "Rain occurrence cannot be determined for the complete selection. "
+                "Available hours show no precipitation above 0 mm, but some hours "
+                "are missing." + coverage + scope
+                + " These are forecast values, not observations."
             )
 
         if row["rain_expected"]:
@@ -138,14 +156,14 @@ def _external_answer_text(
                 f"shows precipitation above 0 mm in "
                 f"{row['rainy_hours']} of "
                 f"{row['hours_with_values']} forecast hours. "
-                f"This is a forecast, not an observation."
+                f"This is a forecast, not an observation." + coverage + scope
             )
 
         return (
             f"No precipitation above 0 mm appears in the "
             f"{row['hours_with_values']} forecast hours "
             f"with available values. This is a forecast, "
-            f"not an observation."
+            f"not an observation." + coverage + scope
         )
 
     row = rows[0]
@@ -158,13 +176,26 @@ def _external_answer_text(
     else:
         measure = "relative humidity"
 
+    scope = (
+        f" Selected forecast hours: {row['forecast_valid_from']} to "
+        f"{row['forecast_valid_to']} at requested coordinates {row['latitude']}, "
+        f"{row['longitude']}. {row['hours_with_values']} of {row['expected_hours']} "
+        f"hours have values; {row['missing_hours']} are missing."
+    )
+    if execution.operation == "value":
+        return (
+            f"The saved Open-Meteo/ECMWF forecast {measure} is {row['value']} "
+            f"{row['unit']} at {row['valid_at']}. This is a forecast, "
+            "not an observation." + scope
+        )
+
     return (
         f"The saved Open-Meteo/ECMWF forecast {measure} "
         f"ranges from {row['minimum']} {row['unit']} at "
         f"{row['minimum_valid_at']} to "
         f"{row['maximum']} {row['unit']} at "
         f"{row['maximum_valid_at']}. These are forecast "
-        f"values, not observations."
+        f"values, not observations." + scope
     )
 
 
@@ -172,6 +203,7 @@ def _external_answer(
     question: str,
     external_route,
     execution,
+    stored=None,
 ) -> AgDAAnswer:
 
     source = next(
@@ -184,8 +216,13 @@ def _external_answer(
         ),
         None,
     )
+    if stored is not None:
+        source = captured_source_manifest(
+            runtime.source_registry, execution.source_id, stored,
+        )
 
     result = {
+        "snapshot_id": stored.snapshot_id if stored is not None else None,
         "metric_id":
             execution.metric_id,
         "source_id":
@@ -326,6 +363,9 @@ def ask_question(
             == ExternalRouteStatus.ROUTED
         ):
 
+            market_snapshot = runtime.market_price_snapshot()
+            weather_snapshot = runtime.weather_forecast_snapshot()
+
             execution = (
                 runtime
                 .external_metric_executor
@@ -333,12 +373,10 @@ def ask_question(
                     external_route,
 
                     market_snapshot=
-                        runtime
-                        .market_price_snapshot(),
+                        market_snapshot,
 
                     weather_snapshot=
-                        runtime
-                        .weather_forecast_snapshot(),
+                        weather_snapshot,
 
                     max_items=
                         request.max_rank_items,
@@ -349,6 +387,11 @@ def ask_question(
                 request.question,
                 external_route,
                 execution,
+                stored=(
+                    market_snapshot
+                    if execution.metric_id == "market_price_ngn_per_kg"
+                    else weather_snapshot
+                ),
             )
 
 
