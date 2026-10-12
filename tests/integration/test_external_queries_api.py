@@ -8,7 +8,12 @@ import importlib
 import unittest
 from unittest.mock import patch
 
-from tests.integration import test_external_question_api as fixtures
+if __package__:
+    from . import test_external_question_api as fixtures
+else:
+    # The regression runner executes test files directly; tests are not part of
+    # the editable application package installed by CI.
+    import test_external_question_api as fixtures
 from packages.data_sources.snapshot_store import FewsSnapshotStore
 from packages.data_sources.weather_snapshot_store import WeatherSnapshotStore
 
