@@ -1,0 +1,185 @@
+{
+  "captured_at": "2026-10-12T21:26:00.5704464Z",
+  "checks": {
+    "staging_environment_correct": true,
+    "staging_docs_disabled": true,
+    "staging_web_api_target_correct": true,
+    "staging_analytics_tokens_match": true,
+    "staging_token_roles_distinct": true,
+    "staging_web_has_no_database_or_operations_secrets": true,
+    "staging_no_public_secret_variables": true,
+    "production_environment_correct": true,
+    "production_docs_disabled": true,
+    "production_web_api_target_correct": true,
+    "production_analytics_tokens_match": true,
+    "production_token_roles_distinct": true,
+    "production_web_has_no_database_or_operations_secrets": true,
+    "production_no_public_secret_variables": true,
+    "agda_operations_token_distinct_between_environments": true,
+    "agda_internal_analytics_token_distinct_between_environments": true,
+    "dashboard_token_distinct_between_environments": true,
+    "production_weather_token_matches_target_api": true,
+    "production_weather_target_host_correct": true,
+    "production_fews_token_matches_target_api": true,
+    "production_fews_target_host_correct": true,
+    "staging_weather_token_matches_target_api": true,
+    "staging_weather_target_host_correct": true,
+    "production_api_manual_only": true,
+    "production_web_manual_only": true,
+    "production_external_volume_api_only": true,
+    "production_weather_schedule_preserved": true,
+    "production_fews_schedule_preserved": true
+  },
+  "failed_checks": [],
+  "staging_persistence": {
+    "conversation_backend": "memory",
+    "redis_configured": false,
+    "analytics_configured": false
+  },
+  "production_persistence": {
+    "conversation_backend": "redis",
+    "redis_configured": true,
+    "analytics_configured": true
+  },
+  "environments": [
+    {
+      "name": "production",
+      "id": "230a2000-e778-4f5f-8d50-abeed20c0cbe",
+      "services": [
+        {
+          "name": "agda-weather-refresh-prod",
+          "service_id": "ea12bd89-ea5d-41c6-a303-4bbb9b43fc05",
+          "deployment_id": "0f31ce2a-4746-4707-b411-e7fc272e4a33",
+          "status": "SUCCESS",
+          "repository": null,
+          "cron": "0 */4 * * *",
+          "next_cron_run_at": "2026-10-13T00:00:00Z",
+          "deployment_message": "Production weather scheduler proof 66ee03f"
+        },
+        {
+          "name": "web",
+          "service_id": "b780fd88-087b-41c3-b26b-5ba9da08bb3e",
+          "deployment_id": "ca0e5c79-7a1e-4c02-b85a-dd47e34ccff2",
+          "status": "SUCCESS",
+          "repository": null,
+          "cron": null,
+          "next_cron_run_at": null,
+          "deployment_message": "Phase 29B exact merged release 722e6d5b00b6f97d798d64cb568651bcbc35052e production web promotion"
+        },
+        {
+          "name": "api",
+          "service_id": "3e89d0a0-4095-4fb3-a90e-3108d5d3142b",
+          "deployment_id": "e5786547-ca07-4e8c-8729-e18d89ff51e0",
+          "status": "SUCCESS",
+          "repository": null,
+          "cron": null,
+          "next_cron_run_at": null,
+          "deployment_message": "Phase 29 manual promotion: verified merge 722e6d5b00b6f97d798d64cb568651bcbc35052e"
+        },
+        {
+          "name": "agda-weather-refresh",
+          "service_id": "bed49fce-0c31-4bdd-832d-50eb19a4e8e9",
+          "deployment_id": "390bcfbb-dd3c-4a5a-ad45-6e0c7409e2bc",
+          "status": "SUCCESS",
+          "repository": null,
+          "cron": "30 3 1 * *",
+          "next_cron_run_at": "2026-11-01T03:30:00Z",
+          "deployment_message": "Deploy production FEWS scheduler Phase 27 66ee03f"
+        }
+      ],
+      "volumes": [
+        {
+          "mount_path": "/data/external",
+          "service_id": "3e89d0a0-4095-4fb3-a90e-3108d5d3142b"
+        }
+      ]
+    },
+    {
+      "name": "staging",
+      "id": "e99ee3ee-d76c-40c3-99b0-b6be83d03c58",
+      "services": [
+        {
+          "name": "web",
+          "service_id": "b780fd88-087b-41c3-b26b-5ba9da08bb3e",
+          "deployment_id": "c25633ed-dc6b-4502-8536-f956cad732c6",
+          "status": "SUCCESS",
+          "repository": "LordDonald/AgDA",
+          "cron": null,
+          "next_cron_run_at": null,
+          "deployment_message": "Phase 29 merged release 722e6d5b00b6f97d798d64cb568651bcbc35052e staging web"
+        },
+        {
+          "name": "api-staging",
+          "service_id": "6616b448-3e6e-4dcc-9fed-bcbe78fc18d4",
+          "deployment_id": "aa4c7f0c-f4f6-4a74-b933-257515b2c1bb",
+          "status": "SUCCESS",
+          "repository": null,
+          "cron": null,
+          "next_cron_run_at": null,
+          "deployment_message": "Phase 29B merged release 722e6d5b00b6f97d798d64cb568651bcbc35052e staging validation"
+        },
+        {
+          "name": "agda-weather-refresh",
+          "service_id": "bed49fce-0c31-4bdd-832d-50eb19a4e8e9",
+          "deployment_id": "e19b2998-bd50-4fe7-b822-6d0ad0634dcb",
+          "status": "SUCCESS",
+          "repository": null,
+          "cron": "0 */4 * * *",
+          "next_cron_run_at": "2026-10-13T00:00:00Z",
+          "deployment_message": "Rebind staging weather scheduler to api-staging"
+        }
+      ],
+      "volumes": [
+        {
+          "mount_path": "/data/external",
+          "service_id": "6616b448-3e6e-4dcc-9fed-bcbe78fc18d4"
+        }
+      ]
+    }
+  ],
+  "runtime_health": {
+    "staging": {
+      "status": "ready",
+      "ready": true,
+      "environment": "staging",
+      "conversation_contexts": 4,
+      "data_version": "wave5_v1",
+      "release_state": "stable",
+      "metric_version": "1.0.0",
+      "registered_metrics": 18,
+      "external_sources": {
+        "status": "available",
+        "affects_core_readiness": false,
+        "registered_sources": 2,
+        "sources_with_snapshots": 2,
+        "fresh_sources": 2,
+        "stale_sources": 0,
+        "unknown_sources": 0,
+        "snapshot_restore_status": "loaded",
+        "weather_snapshot_restore_status": "loaded"
+      }
+    },
+    "production": {
+      "status": "ready",
+      "ready": true,
+      "environment": "production",
+      "conversation_contexts": 4,
+      "data_version": "wave5_v1",
+      "release_state": "stable",
+      "metric_version": "1.0.0",
+      "registered_metrics": 18,
+      "external_sources": {
+        "status": "available",
+        "affects_core_readiness": false,
+        "registered_sources": 2,
+        "sources_with_snapshots": 2,
+        "fresh_sources": 2,
+        "stale_sources": 0,
+        "unknown_sources": 0,
+        "snapshot_restore_status": "loaded",
+        "weather_snapshot_restore_status": "loaded"
+      }
+    }
+  },
+  "health_captured_at": "2026-10-12T21:28:58.0239436Z"
+}

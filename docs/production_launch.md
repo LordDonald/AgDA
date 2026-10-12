@@ -1,5 +1,11 @@
 \# AgDA Production Launch Record
 
+> Historical launch evidence: this document describes the original MVP launch.
+> Later persistence, external-source, and deployment changes are recorded in the
+> [Phase 29 closure record](phase29_closure.md). Use the current
+> [environment contract](environment_contract.md) for configuration requirements;
+> this historical record does not establish the current deployed state.
+
 
 
 \## Status

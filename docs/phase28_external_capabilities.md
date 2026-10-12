@@ -180,3 +180,6 @@ If every selected value is missing, the result is unavailable.
 The scoped Phase 28 implementation and staging gates are complete. Merge and
 manual production promotion remain separate review/release steps. New providers,
 broader geographic coverage and a selector UI remain outside this increment.
+
+For the subsequent merge, staging revalidation and manual production promotion,
+see the [Phase 29 release and closure record](phase29_closure.md).
