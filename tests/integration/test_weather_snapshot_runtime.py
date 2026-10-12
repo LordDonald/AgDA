@@ -41,6 +41,9 @@ health_module = importlib.import_module(
 sources_module = importlib.import_module(
     "apps.api.app.routes.sources"
 )
+internal_external_sources_module = importlib.import_module(
+    "apps.api.app.routes.internal_external_sources"
+)
 
 
 def sample_weather_fetch(
@@ -223,10 +226,19 @@ class WeatherSnapshotRuntimeTests(
                 )
             )
 
+            stack.enter_context(
+                patch.object(
+                    internal_external_sources_module,
+                    "settings",
+                    configured_settings,
+                )
+            )
+
             for module in (
                 main_module,
                 health_module,
                 sources_module,
+                internal_external_sources_module,
             ):
                 stack.enter_context(
                     patch.object(
@@ -547,6 +559,156 @@ class WeatherSnapshotRuntimeTests(
             self.assertEqual(
                 runtime.weather_snapshot_restore_status,
                 "loaded",
+            )
+
+
+    def test_internal_reload_adopts_newer_weather_snapshot_without_restart(
+        self,
+    ):
+        operations_token = (
+            "phase27-real-runtime-token"
+        )
+
+        _, _, older = self.save(
+            retrieved_at=
+                self.now
+                - timedelta(hours=1)
+        )
+
+        configured_settings = replace(
+            self.configured(),
+            operations_token=
+                operations_token,
+        )
+
+        with self.api(
+            configured_settings
+        ) as (
+            runtime,
+            client,
+        ):
+            self.assertEqual(
+                runtime._weather_forecast_snapshot,
+                older,
+            )
+
+            self.assert_ready(
+                client
+            )
+
+            _, _, newer = self.save(
+                retrieved_at=self.now
+            )
+
+            # Writing the newer snapshot to SQLite
+            # must not mutate the running process
+            # until explicit adoption occurs.
+            self.assertEqual(
+                runtime._weather_forecast_snapshot,
+                older,
+            )
+
+            response = client.post(
+                (
+                    "/v1/internal/"
+                    "external-sources/reload"
+                ),
+                json={
+                    "source": "weather",
+                },
+                headers={
+                    "X-AgDA-Operations-Token":
+                        operations_token,
+                },
+            )
+
+            self.assertEqual(
+                response.status_code,
+                200,
+                response.text,
+            )
+
+            payload = response.json()
+
+            self.assertEqual(
+                payload["status"],
+                "reloaded",
+            )
+
+            self.assertEqual(
+                payload["source"],
+                "weather",
+            )
+
+            self.assertIsNone(
+                payload["fews"]
+            )
+
+            self.assertEqual(
+                payload["weather"][
+                    "before_snapshot_id"
+                ],
+                older.snapshot_id,
+            )
+
+            self.assertEqual(
+                payload["weather"][
+                    "after_snapshot_id"
+                ],
+                newer.snapshot_id,
+            )
+
+            self.assertTrue(
+                payload["weather"][
+                    "changed"
+                ]
+            )
+
+            self.assertEqual(
+                payload["weather"][
+                    "restore_status"
+                ],
+                "loaded",
+            )
+
+            self.assertTrue(
+                payload["core_ready"]
+            )
+
+            # Same process, no restart:
+            # active runtime now holds the
+            # newly persisted snapshot.
+            self.assertEqual(
+                runtime._weather_forecast_snapshot,
+                newer,
+            )
+
+            self.assert_ready(
+                client
+            )
+
+            sources = client.get(
+                "/v1/sources"
+            )
+
+            self.assertEqual(
+                sources.status_code,
+                200,
+            )
+
+            weather = next(
+                source
+                for source
+                in sources.json()[
+                    "sources"
+                ]
+                if source["source_id"]
+                == OPEN_METEO_FORECAST_SOURCE_ID
+            )
+
+            self.assertEqual(
+                weather["retrieved_at"],
+                self.now.isoformat(),
             )
 
 
