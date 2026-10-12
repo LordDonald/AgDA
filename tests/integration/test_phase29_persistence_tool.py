@@ -3,10 +3,17 @@
 from contextlib import redirect_stdout
 import io
 import json
+from pathlib import Path
+import sys
 from unittest import TestCase, main
 from unittest.mock import Mock, patch
 
 import fakeredis
+
+# Tooling is intentionally outside installed packages; direct script execution
+# must resolve this checkout without relying on an inherited PYTHONPATH.
+ROOT_DIR = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT_DIR))
 
 from packages.answering.conversations import RedisConversationStore
 from packages.contracts.question import QuestionInterpretation, QuestionSpecification

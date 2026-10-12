@@ -181,5 +181,24 @@
       }
     }
   },
-  "health_captured_at": "2026-10-12T21:28:58.0239436Z"
+  "health_captured_at": "2026-10-12T21:28:58.0239436Z",
+  "bounded_api_log_audit": [
+    {
+      "environment": "staging",
+      "requested_log_lines": 150,
+      "returned_log_lines": 73,
+      "known_secret_value_matches": [],
+      "credential_url_patterns_found": 0,
+      "request_header_patterns_found": 0
+    },
+    {
+      "environment": "production",
+      "requested_log_lines": 150,
+      "returned_log_lines": 91,
+      "known_secret_value_matches": [],
+      "credential_url_patterns_found": 0,
+      "request_header_patterns_found": 0
+    }
+  ],
+  "log_audit_captured_at": "2026-10-12T21:37:34.9892424Z"
 }

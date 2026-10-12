@@ -158,6 +158,9 @@ in process memory and were not logged or committed.
   A targeted scan of 220 tracked files and the three Phase 28 commits found no
   private-key, provider-key, credential-URL or inline-secret candidates. This was
   a targeted audit, not an exhaustive credential-history or dependency-advisory scan.
+- A bounded API log audit returned 73 staging and 91 production lines. Neither
+  sample contained configured secret values, credential URL patterns or the
+  checked authentication-header patterns. Raw log contents were not retained.
 - Production API and web repository sources are blank. Manual CLI promotion did
   not reconnect them to GitHub. Both production schedulers also retain blank sources.
 - Production weather remains `0 */4 * * *`; FEWS remains `30 3 1 * *`.

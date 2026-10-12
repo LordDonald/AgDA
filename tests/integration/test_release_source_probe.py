@@ -7,9 +7,15 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+
+# Tooling is intentionally outside installed packages; direct script execution
+# must resolve this checkout without relying on an inherited PYTHONPATH.
+ROOT_DIR = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT_DIR))
 
 from tools import build_release_probe as builder
 

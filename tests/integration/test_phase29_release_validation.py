@@ -4,9 +4,16 @@ from contextlib import redirect_stdout
 import io
 import json
 import os
+from pathlib import Path
+import sys
 import unittest
 from unittest.mock import Mock, patch
 from urllib.error import HTTPError
+
+# Tooling is intentionally outside installed packages; direct script execution
+# must resolve this checkout without relying on an inherited PYTHONPATH.
+ROOT_DIR = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT_DIR))
 
 from tools import validate_phase28_staging as staging
 from tools import validate_phase29_release as release
