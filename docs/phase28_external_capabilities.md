@@ -154,4 +154,29 @@ If every selected value is missing, the result is unavailable.
   rejects non-staging environments before any analytical POST, disables HTTP
   redirects, uses live snapshot pins, independently calculates expected results
   from saved records, and rechecks core health after its analytical checks.
-- Staging deployment and live validation are pending. Production is not promoted.
+- Staging API deployment `3d55f301-30ac-4e2d-8634-f05850a72ebe` succeeded with
+  implementation commit `ffbef588c993b5f188c9e41028bf617c26080822`. Only
+  `api-staging` in environment `e99ee3ee-d76c-40c3-99b0-b6be83d03c58` was deployed.
+  [Deployment record](https://railway.com/project/0660f957-e4ad-4369-abca-984316363c2d/service/6616b448-3e6e-4dcc-9fed-bcbe78fc18d4?id=3d55f301-30ac-4e2d-8634-f05850a72ebe).
+- The committed smoke script passed inside that staging service: exact FEWS
+  observation, compatible five-market ranking, exact forecast temperature hour,
+  independent precipitation sum across 72/72 available hours, out-of-coverage
+  refusal, wrong operation/source selectors (422), snapshot mismatch (409),
+  Wave5 yield/price-change/climate answers, mixed-source and qualified-location
+  reframing, legacy external ranking, and core health before/after.
+  FEWS proof snapshot:
+  `555beb1480ab9482df703803e24e3a83b97852f8af60ba379dfe38d2103db501`.
+  Weather proof snapshot:
+  `831abc71e368b4f3b19acf4ec8a80badd941fe8104eba08c8c2d8aeb67b75fdf`.
+- Staging web proxy checks passed for core price change, forecast range, qualified
+  location refusal, and mixed-source refusal. The web frontend was not redeployed.
+- At `2026-10-12T19:45:01Z`, production verification passed: ready, `wave5_v1`,
+  stable, metric `1.0.0`, 18 metrics, two fresh sources. All four production
+  repository sources remain blank; cron expressions and volume ownership match
+  the Phase 27 baseline. API deployment remains
+  `38e08b16-5731-4db9-9345-4338bfbb4710`; web deployment remains
+  `75b83095-e97a-4cc4-99f8-5a4a21a92f32`. No production deployment occurred.
+
+The scoped Phase 28 implementation and staging gates are complete. Merge and
+manual production promotion remain separate review/release steps. New providers,
+broader geographic coverage and a selector UI remain outside this increment.
