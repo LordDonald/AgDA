@@ -17,6 +17,9 @@ from fastapi import (
 )
 from pydantic import BaseModel
 
+from apps.api.app.core.external_refresh_observability import (
+    emit_external_refresh_event,
+)
 from apps.api.app.core.runtime import runtime
 from apps.api.app.core.settings import settings
 
@@ -333,6 +336,14 @@ def refresh_external_source(
             }:
                 response.status_code = 503
 
+            emit_external_refresh_event(
+                event=
+                    "agda_external_refresh_retained",
+                source=request.source,
+                outcome=outcome,
+                core_ready=runtime.ready,
+            )
+
             return ExternalSourceRefreshResponse(
                 status=
                     "refresh_not_adopted",
@@ -395,6 +406,21 @@ def refresh_external_source(
         if not adopted:
             response.status_code = 503
 
+            emit_external_refresh_event(
+                event=
+                    "agda_external_refresh_adoption_failed",
+                source=request.source,
+                outcome=outcome,
+                core_ready=runtime.ready,
+                restore_status=
+                    restore_status,
+                runtime_snapshot_id=
+                    after,
+                changed=(
+                    before != after
+                ),
+            )
+
             return ExternalSourceRefreshResponse(
                 status=
                     "adoption_failed",
@@ -403,6 +429,21 @@ def refresh_external_source(
                 refresh=refresh_result,
                 reload=reload_state,
             )
+
+        emit_external_refresh_event(
+            event=
+                "agda_external_refresh_success",
+            source=request.source,
+            outcome=outcome,
+            core_ready=runtime.ready,
+            restore_status=
+                restore_status,
+            runtime_snapshot_id=
+                after,
+            changed=(
+                before != after
+            ),
+        )
 
         return ExternalSourceRefreshResponse(
             status=

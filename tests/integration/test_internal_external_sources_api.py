@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import unittest
 from dataclasses import dataclass, replace
 from unittest.mock import patch
@@ -538,6 +539,291 @@ class InternalExternalSourceReloadTests(
                 "after_snapshot_id"
             ],
             A,
+        )
+
+
+    def test_success_refresh_emits_structured_info_event(self):
+        outcome = route_module.ExternalRefreshOutcome(
+            source_id="open_meteo_forecast",
+            status=route_module.ExternalRefreshStatus.UPDATED,
+            previous_snapshot_id=B,
+            active_snapshot_id=C,
+            retrieved_at=None,
+            record_count=72,
+        )
+
+        self.runtime.weather_id = B
+        self.runtime.next_weather_id = C
+        self.runtime.next_weather_status = "loaded"
+
+        with (
+            patch.object(
+                route_module,
+                "_refresh_weather",
+                return_value=outcome,
+            ),
+            self.assertLogs(
+                "agda.external_refresh",
+                level="INFO",
+            ) as logs,
+        ):
+            response = self.client.post(
+                "/v1/internal/external-sources/refresh",
+                json={
+                    "source": "weather",
+                },
+                headers=self.headers(),
+            )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        event = json.loads(
+            logs.records[-1].getMessage()
+        )
+
+        self.assertEqual(
+            event["event"],
+            "agda_external_refresh_success",
+        )
+
+        self.assertEqual(
+            event["source"],
+            "weather",
+        )
+
+        self.assertEqual(
+            event["active_snapshot_id"],
+            C,
+        )
+
+        self.assertEqual(
+            event["runtime_snapshot_id"],
+            C,
+        )
+
+        self.assertEqual(
+            event["restore_status"],
+            "loaded",
+        )
+
+        self.assertTrue(
+            event["core_ready"]
+        )
+
+    def test_retained_refresh_emits_warning_without_sensitive_details(self):
+        private_error = (
+            "token=phase27-secret "
+            "path=/data/external/weather.sqlite3"
+        )
+
+        outcome = route_module.ExternalRefreshOutcome(
+            source_id="open_meteo_forecast",
+            status=
+                route_module.ExternalRefreshStatus.FAILED_RETAINED,
+            previous_snapshot_id=B,
+            active_snapshot_id=B,
+            retrieved_at=None,
+            record_count=72,
+            error_type="WeatherClientError",
+            error_message=private_error,
+        )
+
+        with (
+            patch.object(
+                route_module,
+                "_refresh_weather",
+                return_value=outcome,
+            ),
+            self.assertLogs(
+                "agda.external_refresh",
+                level="WARNING",
+            ) as logs,
+        ):
+            response = self.client.post(
+                "/v1/internal/external-sources/refresh",
+                json={
+                    "source": "weather",
+                },
+                headers=self.headers(),
+            )
+
+        self.assertEqual(
+            response.status_code,
+            503,
+        )
+
+        message = (
+            logs.records[-1].getMessage()
+        )
+
+        event = json.loads(
+            message
+        )
+
+        self.assertEqual(
+            event["event"],
+            "agda_external_refresh_retained",
+        )
+
+        self.assertEqual(
+            event["refresh_status"],
+            "failed_retained",
+        )
+
+        self.assertEqual(
+            event["error_type"],
+            "WeatherClientError",
+        )
+
+        self.assertNotIn(
+            "error_message",
+            event,
+        )
+
+        self.assertNotIn(
+            "phase27-secret",
+            message,
+        )
+
+        self.assertNotIn(
+            "/data/external",
+            message,
+        )
+
+        self.assertNotIn(
+            "token",
+            message.lower(),
+        )
+
+    def test_adoption_failure_emits_error_event(self):
+        outcome = route_module.ExternalRefreshOutcome(
+            source_id="open_meteo_forecast",
+            status=route_module.ExternalRefreshStatus.UPDATED,
+            previous_snapshot_id=B,
+            active_snapshot_id=C,
+            retrieved_at=None,
+            record_count=72,
+        )
+
+        self.runtime.weather_id = B
+        self.runtime.next_weather_id = A
+        self.runtime.next_weather_status = "loaded"
+
+        with (
+            patch.object(
+                route_module,
+                "_refresh_weather",
+                return_value=outcome,
+            ),
+            self.assertLogs(
+                "agda.external_refresh",
+                level="ERROR",
+            ) as logs,
+        ):
+            response = self.client.post(
+                "/v1/internal/external-sources/refresh",
+                json={
+                    "source": "weather",
+                },
+                headers=self.headers(),
+            )
+
+        self.assertEqual(
+            response.status_code,
+            503,
+        )
+
+        event = json.loads(
+            logs.records[-1].getMessage()
+        )
+
+        self.assertEqual(
+            event["event"],
+            "agda_external_refresh_adoption_failed",
+        )
+
+        self.assertEqual(
+            event["active_snapshot_id"],
+            C,
+        )
+
+        self.assertEqual(
+            event["runtime_snapshot_id"],
+            A,
+        )
+
+        self.assertEqual(
+            event["restore_status"],
+            "loaded",
+        )
+
+        self.assertTrue(
+            event["core_ready"]
+        )
+
+
+    def test_monitoring_failure_does_not_break_successful_refresh(
+        self,
+    ):
+        outcome = route_module.ExternalRefreshOutcome(
+            source_id="open_meteo_forecast",
+            status=route_module.ExternalRefreshStatus.UPDATED,
+            previous_snapshot_id=B,
+            active_snapshot_id=C,
+            retrieved_at=None,
+            record_count=72,
+        )
+
+        self.runtime.weather_id = B
+        self.runtime.next_weather_id = C
+        self.runtime.next_weather_status = "loaded"
+
+        with (
+            patch.object(
+                route_module,
+                "_refresh_weather",
+                return_value=outcome,
+            ),
+            patch(
+                (
+                    "apps.api.app.core."
+                    "external_refresh_observability."
+                    "logger.log"
+                ),
+                side_effect=RuntimeError(
+                    "synthetic logging failure"
+                ),
+            ),
+        ):
+            response = self.client.post(
+                "/v1/internal/external-sources/refresh",
+                json={
+                    "source": "weather",
+                },
+                headers=self.headers(),
+            )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+            response.text,
+        )
+
+        payload = response.json()
+
+        self.assertEqual(
+            payload["status"],
+            "refreshed_and_adopted",
+        )
+
+        self.assertEqual(
+            payload["reload"][
+                "after_snapshot_id"
+            ],
+            C,
         )
 
 
