@@ -1,0 +1,107 @@
+{
+    "captured_at":  "2026-10-15T11:16:01.598670+00:00",
+    "release_sha":  "722e6d5b00b6f97d798d64cb568651bcbc35052e",
+    "scope":  "staging persistence and browser closure evidence",
+    "production_changed":  false,
+    "staging_storage":  {
+                            "redis":  {
+                                          "provider":  "Render Key Value",
+                                          "scheme":  "rediss",
+                                          "host":  "oregon-keyvalue.render.com",
+                                          "port":  6379,
+                                          "distinct_from_production":  true,
+                                          "provider_level_durability_limitation_documented":  true,
+                                          "external_allowlist":  "0.0.0.0/0",
+                                          "tls_required":  true,
+                                          "authentication_required":  true,
+                                          "dynamic_egress_limitation":  "Railway Free does not provide a fixed egress IP."
+                                      },
+                            "analytics":  {
+                                              "provider":  "Neon",
+                                              "host":  "ep-noisy-truth-arwkfcsa.c-4.us-west-2.aws.neon.tech",
+                                              "database":  "neondb",
+                                              "host_distinct_from_production":  true,
+                                              "destination_distinct_from_production":  true
+                                          }
+                        },
+    "analytics_schema":  {
+                             "bootstrap_runs":  2,
+                             "second_bootstrap_passed":  true,
+                             "tables_verified":  2,
+                             "views_verified":  5,
+                             "view_contracts_verified":  5,
+                             "initial_product_events_rows":  0,
+                             "initial_product_feedback_rows":  0
+                         },
+    "source_verification":  {
+                                "required_release":  "722e6d5b00b6f97d798d64cb568651bcbc35052e",
+                                "api_release_file_count":  116,
+                                "before_deployment_passed":  true,
+                                "after_deployment_passed":  true,
+                                "after_mismatch_paths":  [
+
+                                                         ],
+                                "rejected_retained_source_deployment":  {
+                                                                            "deployment_id":  "f1ad397d-eba4-4306-be63-5fff8d48fd24",
+                                                                            "mismatch_count":  16,
+                                                                            "accepted_for_persistence_proof":  false
+                                                                        }
+                            },
+    "persistence_proof":  {
+                              "proof_id":  "p29_17902f6b05384672b5ba2144c91731b0",
+                              "before":  {
+                                             "deployment_id":  "3e853487-3f44-449b-8814-7c4148135ef0",
+                                             "passed":  true,
+                                             "redis_schema_version":  1,
+                                             "redis_ttl_seconds":  86400,
+                                             "synthetic_question_events":  1,
+                                             "feedback_upsert":  "inserted",
+                                             "analytics_contracts":  5
+                                         },
+                              "after":  {
+                                            "deployment_id":  "bb9dd0e4-3ed9-4f42-8f18-81c6e37baeee",
+                                            "passed":  true,
+                                            "pre_restart_conversation_survived":  true,
+                                            "pre_restart_event_survived":  true,
+                                            "pre_restart_feedback_survived":  true,
+                                            "redis_schema_version":  1,
+                                            "redis_ttl_seconds":  86400,
+                                            "synthetic_question_events":  2,
+                                            "feedback_upsert":  "updated",
+                                            "analytics_contracts":  5,
+                                            "analytics_row_counts":  [
+                                                                         1,
+                                                                         2,
+                                                                         1,
+                                                                         1,
+                                                                         0
+                                                                     ]
+                                        },
+                              "core":  {
+                                           "ready":  true,
+                                           "data_version":  "wave5_v1",
+                                           "release_state":  "stable",
+                                           "metric_version":  "1.0.0",
+                                           "registered_metrics":  18,
+                                           "external_sources_affect_core_readiness":  false
+                                       }
+                          },
+    "web_analytics_proxy":  {
+                                "unauthenticated_status":  401,
+                                "authenticated_status":  200,
+                                "authenticated_proxy_passed":  true,
+                                "proof_time_total_questions":  2,
+                                "proof_time_feedback_count":  1
+                            },
+    "browser_qa":  {
+                       "passed":  true,
+                       "checks_passed":  4,
+                       "checks_total":  4,
+                       "journeys":  [
+                                        "main render and Enter-key submission",
+                                        "same-conversation contextual follow-up",
+                                        "authenticated analytics dashboard render and refresh",
+                                        "200-percent zoom/responsive render and new-conversation reset"
+                                    ]
+                   }
+}

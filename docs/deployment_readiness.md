@@ -1,5 +1,11 @@
 \# AgDA Deployment Readiness
 
+> Historical preparation evidence: the pre-launch checklist, dependency versions,
+> and memory-only runtime description below reflect the original MVP milestone.
+> Use the current [environment contract](environment_contract.md) and
+> [Phase 29 closure record](phase29_closure.md) for later configuration,
+> persistence, deployment safeguards, and verified release status.
+
 
 
 \## Status

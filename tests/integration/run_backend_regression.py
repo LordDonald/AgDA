@@ -30,6 +30,9 @@ INTEGRATION_DIR = (
 
 TEST_FILES = [
     "test_release_loader.py",
+    "test_phase29_release_validation.py",
+    "test_phase29_persistence_tool.py",
+    "test_release_source_probe.py",
     "test_metric_registry.py",
     "test_analytics_executor.py",
     "test_question_router.py",
