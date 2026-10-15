@@ -1,10 +1,11 @@
 # Phase 29 release and closure record
 
-Status on October 12, 2026: **release promoted; final phase remains open**.
-The reviewed Phase 28 implementation is running in staging and production.
-Dedicated staging Redis and analytics restoration is blocked by Railway's
-resource provision limit. Browser rendering QA also remains unverified because
-the available browser inventory is empty. These are not recorded as passes.
+Status on October 15, 2026: **release promoted; runtime closure gates passed; final closure PR validation remains**.
+The reviewed Phase 28 implementation remains the deployed runtime in staging and
+production. Dedicated staging Redis and PostgreSQL analytics persistence have now
+been restored and proven across API redeployment. Authenticated web analytics and
+four clicked browser-rendering QA journeys also passed. No production runtime was
+changed during this persistence/visual closure work.
 
 ## Scope and acceptance
 
@@ -14,10 +15,11 @@ the available browser inventory is empty. These are not recorded as passes.
 | 29B merge | Guarded merge; exact merge SHA recorded; local and remote main aligned | Passed; merge `722e6d5b00b6f97d798d64cb568651bcbc35052e` |
 | Staging release | Merged API and web source verified; core and external behavior pass | Passed; deployments and checks below |
 | Production release | Manually promote the same clean revision after staging; verify source and behavior | Passed for API and web |
-| Staging persistence | Dedicated resources; schema verified; Redis context and analytics survive redeployment | **Blocked** before provisioning; no live persistence proof claimed |
+| Staging persistence | Dedicated resources; schema verified; Redis context and analytics survive redeployment | Passed; dedicated staging Redis and PostgreSQL survived the before/redeploy/after proof |
 | Secrets and config | Separate environment/role secrets, correct private targets, no public credentials, manual production guardrails | Passed for the checks described below |
-| Regression and CI | Backend regression, trusted hosts, user/manual QA, frontend lint/build | Release main CI passed; closure PR must also pass its own CI |
-| Environment freeze | Record exact deployments, sources, volumes, schedules, readiness and open items | Captured with the persistence and visual QA limitations explicit |
+| Regression and CI | Backend regression, trusted hosts, user/manual QA, frontend lint/build | Release main CI passed; previous closure-head CI passed; final updated closure head still requires CI |
+| Browser rendering QA | Clicked staging journeys, keyboard path, analytics dashboard, zoom/responsive behavior | Passed 4/4 on the deployed staging web UI |
+| Environment freeze | Record exact deployments, sources, volumes, schedules, readiness and open items | Renewed after live persistence/browser QA; all sanitized configuration checks passed |
 
 No runtime code, Wave5 release data, provider clients, source contracts, refresh
 logic or deployment workflow changes are part of this closure increment.
@@ -52,7 +54,7 @@ Railway project: `0660f957-e4ad-4369-abca-984316363c2d`.
 
 | Environment | Service | Successful deployment |
 | --- | --- | --- |
-| staging | api-staging | `aa4c7f0c-f4f6-4a74-b933-257515b2c1bb` |
+| staging | api-staging | `bb9dd0e4-3ed9-4f42-8f18-81c6e37baeee` |
 | staging | web | `c25633ed-dc6b-4502-8536-f956cad732c6` |
 | production | api | `e5786547-ca07-4e8c-8729-e18d89ff51e0` |
 | production | web | `ca0e5c79-7a1e-4c02-b85a-dd47e34ccff2` |
@@ -89,58 +91,68 @@ delivered JavaScript assets returned 200; health selected the correct environmen
 Wave5, FEWS and weather questions returned their appropriate provenance; mixed
 source and unsupported-location questions required reframing. Served assets
 contain the external-data, forecast, historical-observation and saved-query-scope
-labels. This is HTTP/proxy/asset evidence, **not** a browser rendering or clicked
-UI journey proof.
+labels.
 
-## Staging persistence: outstanding external dependency
+The previous browser-rendering gap is now resolved on staging. Four clicked
+browser checks passed: initial rendering plus Enter-key question submission;
+same-conversation contextual follow-up; authenticated internal analytics dashboard
+rendering/refresh; and approximately 200% browser zoom followed by New conversation
+reset. No overlap, clipping, broken horizontal layout or visible application error
+was observed in those checks.
 
-The original staging service recovery intentionally left conversations in memory
-and analytics persistence unconfigured. Fresh dedicated services were selected
-to avoid sharing production storage. On October 12 the staging-linked Railway
-Redis provisioning call failed with:
+## Staging persistence: live proof completed
 
-> Free plan resource provision limit exceeded. Please upgrade to provision more resources!
+Railway's free-plan resource limit prevented additional native persistence
+resources, so independently provisioned resources were used instead. Both were
+verified as distinct from production before configuration:
 
-No Redis service was created, and the subsequent inventory still contained only
-the existing staging API, web and weather scheduler. PostgreSQL was not provisioned
-after the capacity failure. Staging remains `AGDA_CONVERSATION_BACKEND=memory`,
-with no Redis URL or analytics database URL. Production persistence was unchanged.
+- Conversation persistence uses the dedicated staging Render Key Value endpoint
+  `oregon-keyvalue.render.com:6379` over `rediss`.
+- Analytics persistence uses the dedicated staging Neon PostgreSQL endpoint
+  `ep-noisy-truth-arwkfcsa.c-4.us-west-2.aws.neon.tech`, database `neondb`.
+- Neither production Redis nor the production analytics destination was reused.
+- Credentials remain environment secrets and are not recorded in this repository.
 
-The operator must supply additional Railway capacity or independently provisioned
-**dedicated staging** Redis and PostgreSQL resources. Configure credentials through
-secret settings; never put them in chat, tracked files or command output.
-Analytics records have no environment discriminator, so the production analytics
-database is not an acceptable staging destination.
+The PostgreSQL target was inspected before mutation and contained no public
+tables/views. The guarded staging bootstrap was executed twice in the same
+verified staging session. The second execution passed idempotently with both
+tables, all five views and all five current analytics result contracts present;
+`product_events` and `product_feedback` were empty before the synthetic proof.
 
-The remaining restoration sequence is:
+Staging was then configured with `AGDA_CONVERSATION_BACKEND=redis` plus the
+dedicated Redis and analytics URLs. A Railway retained-source redeploy was
+explicitly rejected after the exact source probe detected 16 mismatched
+API/release-data files. No persistence result from that deployment was accepted.
+The API was manually uploaded again from the clean exact release
+`722e6d5b00b6f97d798d64cb568651bcbc35052e`; the standalone source probe then
+passed all 116 API/release-data files with no mismatch.
 
-1. Verify service/environment identity and separate storage destinations. Check
-   PostgreSQL existing objects and privileges before any bootstrap.
-2. Apply [the staging SQL bootstrap](sql/staging_analytics_schema.sql) to the
-   independently verified staging database, with its explicit session marker.
-   Apply it twice and verify both tables plus all five view contracts. It is a
-   guarded, transactional bootstrap, not an automatic migration of unknown tables.
-3. Configure staging-only Redis/analytics references and select the Redis backend;
-   preserve existing tokens and all production settings. Redeploy staging from
-   the clean release SHA above. Verify its source identity and readiness.
-4. Execute `tools/validate_phase29_persistence.py --phase before` inside the
-   staging API, including when sent through SSH stdin. Retain its synthetic
-   `proof_id` and `deployment_id`. Redeploy the same release and reverify source.
-5. Run the tool with `--phase after --proof-id ID --previous-deployment-id ID`.
-   It requires a different deployment identity, verifies Redis schema/TTL/context,
-   persisted question and feedback rows, contextual follow-up, feedback upsert,
-   all five SQL/API analytics contracts and authorization, and unchanged readiness.
-   Direct storage connections are read-only; synthetic records are created through
-   the application's normal question/feedback routes.
-6. Verify the authenticated web analytics proxy, repeat the sanitized environment
-   freeze, and replace this blocked status with actual live evidence.
+The successful persistence sequence used synthetic proof identifier
+`p29_17902f6b05384672b5ba2144c91731b0`:
 
-The persistence tool has local contract/safety coverage; the SQL bootstrap has
-been statically reviewed. Neither has been executed against a live dedicated
-staging database. Selecting Redis
-introduces the pre-existing conversation-store startup dependency; analytics write
-failures remain non-blocking for answers. Neither changes the non-blocking external
-source readiness contract.
+- Before deployment `3e853487-3f44-449b-8814-7c4148135ef0`: Redis schema version
+  1 and positive TTL passed; one synthetic question event and one feedback row
+  were durable; all five analytics SQL/API contracts passed; core remained
+  `wave5_v1`, `stable`, metric `1.0.0`, 18 metrics and ready.
+- After replacement, current deployment
+  `bb9dd0e4-3ed9-4f42-8f18-81c6e37baeee` was independently source-verified at
+  116/116 files and passed readiness before the after proof.
+- The after proof first confirmed that the original Redis conversation, question
+  event and feedback record survived the API replacement. It then resolved
+  `What about Kaduna?` using the persisted RICE grower-share context, created the
+  second durable question event and updated the existing feedback record.
+- All five analytics contracts passed after restart; the post-update view row
+  counts were `[1, 2, 1, 1, 0]`. Core readiness and release invariants remained
+  unchanged.
+- The unauthenticated staging web analytics proxy correctly returned 401.
+  Authenticated access returned 200 with `total_questions=2` and
+  `feedback_count=1` at the proof-time check.
+
+Direct storage access in the proof was read-only; synthetic records were created
+only through the application's normal question and feedback routes. The free
+Render staging resource does not provide the same provider-level durability
+guarantees as production storage; this closure proves survival across AgDA API
+redeployment, which is the Phase 29 persistence acceptance condition.
 
 ## Secrets/config audit and freeze
 
@@ -154,6 +166,10 @@ in process memory and were not logged or committed.
 - Staging web/scheduler target `api-staging.railway.internal`; production
   web/schedulers target `api.railway.internal`. No web database/Redis/operations
   credentials or public-prefixed secret variables were configured.
+- The external free-tier staging Redis endpoint uses TLS and authentication.
+  Railway Free has dynamic egress, so its Render external allowlist is
+  `0.0.0.0/0`; this is a staging-only limitation. Provider-restart durability is
+  not claimed by the Phase 29 API-redeployment persistence proof.
 - Hosted API documentation is disabled. Frontend credentials remain server-side.
   A targeted scan of 220 tracked files and the three Phase 28 commits found no
   private-key, provider-key, credential-URL or inline-secret candidates. This was
@@ -193,6 +209,7 @@ flags that can hide tracked-file changes, and writes outside the release checkou
 Its Python or Node probes require the selected environment, constrain manifest
 paths, and report only revision, file count and mismatched relative paths.
 
-Phase 29 must remain open until staging persistence is restored and survives its
-redeployment proof, final CI is green, the environment freeze is renewed, and the
-visual QA gap is resolved or explicitly accepted by the operator.
+The runtime persistence, visual QA and renewed environment-freeze closure gates
+are now satisfied. Phase 29 remains open only for final closure-head
+validation/CI, review of the resulting documentation-only diff and guarded merge
+of PR #17.
