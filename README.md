@@ -35,6 +35,11 @@ External queries require an available accepted snapshot. The
 [Phase 28 external query contract](docs/phase28_external_capabilities.md)
 describes selectors, operations and provenance for `POST /v1/external-queries`.
 
+To assess AgDA's agricultural usefulness, use the
+[agriculture evaluation guide](docs/agriculture_evaluation.md) or its
+[shareable PDF](docs/agriculture_evaluation.pdf). They explain the aims,
+capabilities and limitations, with sample questions and a feedback worksheet.
+
 ## Status and reading order
 
 For system structure, read the [architecture guide](docs/architecture.md). For

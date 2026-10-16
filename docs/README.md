@@ -9,6 +9,7 @@ deployment or preservation run does not establish current hosted availability.
 
 | Document | Use it for |
 | --- | --- |
+| [Agriculture evaluation guide](agriculture_evaluation.md) and [PDF](agriculture_evaluation.pdf) | Expert briefing on aims, capabilities and limits, with guided questions and a feedback worksheet |
 | [Local development](local_development.md) | Reproducible local setup, default behavior, backend/frontend checks and troubleshooting |
 | [Architecture](architecture.md) | Components, deterministic question flow, storage responsibilities, source provenance and failure boundaries |
 | [Deployment model](deployment.md) | Last recorded staging/production topology, manual promotion, refresh operations and verification boundaries |
