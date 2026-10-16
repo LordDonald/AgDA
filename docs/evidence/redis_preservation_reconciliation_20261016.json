@@ -1,0 +1,133 @@
+{
+  "artifact": "agda_redis_preservation_reconciliation",
+  "schema_version": 1,
+  "review_date_utc": "2026-10-16",
+  "evidence_provenance": "Sanitized summaries transcribed from completed read-only local verification and production Redis inspection; raw backup manifests, inventories and payloads are not copied here.",
+  "runtime_source_reference": "722e6d5b00b6f97d798d64cb568651bcbc35052e",
+  "preservation_git_reference": "b8e21b75d7e8604ac3f7c54fbdcabe335d7a7a03",
+  "local_artifact_reconciliation": {
+    "master_directory_name": "master-20261016T025103Z",
+    "master_json_sha256": "718bd01316e1156a51cba9f3144d980278aed7f8d6c5d0013d2fdd8a6f9aed93",
+    "summary_sha256": "237c1842cf6abb62efeb5e073ccba53fb4307f218fb2c8126c61cdbf51c5cbda",
+    "both_master_hashes_matched": true,
+    "original_inventory_entry_count": 6,
+    "redis_files_verified_against_master": 12,
+    "other_four_sets_rehashed_in_reconciliation": false,
+    "failed_attempt_directory_name": "production-upstash-20261016T023058Z",
+    "failed_attempt_excluded_from_master": true,
+    "redis_sets": [
+      {
+        "name": "production_upstash",
+        "directory_name": "production-upstash-20261016T023643Z",
+        "inventory_captured_utc": "2026-10-16T02:36:49.178212Z",
+        "files_verified": 5,
+        "bytes_verified": 3088,
+        "hashes_and_sizes_match_master": true,
+        "unlisted_files": 0,
+        "captured_key_classes": [
+          {
+            "namespace": "agda:conversation:",
+            "kind": "index",
+            "redis_type": "zset",
+            "count": 1
+          }
+        ],
+        "native_dump_hashes_match_inventory": true,
+        "recorded_index_members": 1,
+        "recorded_stale_index_members": 1,
+        "original_reported_active_conversations": 0,
+        "conversation_jsonl_bytes": 0,
+        "original_runtime_namespace_coverage_proven": false
+      },
+      {
+        "name": "staging_render_redis",
+        "directory_name": "staging-render-redis-20261016T024726Z",
+        "inventory_captured_utc": "2026-10-16T02:47:37.380737Z",
+        "files_verified": 7,
+        "bytes_verified": 5156,
+        "hashes_and_sizes_match_master": true,
+        "unlisted_files": 0,
+        "captured_key_classes": [
+          {
+            "namespace": "agda:staging:conversation:",
+            "kind": "conversation_key",
+            "redis_type": "string",
+            "count": 2
+          },
+          {
+            "namespace": "agda:staging:conversation:",
+            "kind": "index",
+            "redis_type": "zset",
+            "count": 1
+          }
+        ],
+        "native_dump_hashes_match_inventory": true,
+        "original_classifier_prefix": "agda:conversation:",
+        "original_reported_active_conversations": 0,
+        "original_reported_index_members": 0,
+        "conversation_jsonl_bytes": 0,
+        "native_conversation_values_decoded": false,
+        "restore_tested": false
+      }
+    ],
+    "original_preservation_files_modified": false
+  },
+  "production_live_inspection": {
+    "artifact": "agda_production_redis_namespace_inspection",
+    "status": "completed",
+    "started_utc": "2026-10-16T04:00:38.656625Z",
+    "finished_utc": "2026-10-16T04:00:43.109269Z",
+    "target": {
+      "project_id": "0660f957-e4ad-4369-abca-984316363c2d",
+      "environment_id": "230a2000-e778-4f5f-8d50-abeed20c0cbe",
+      "service_id": "3e89d0a0-4095-4fb3-a90e-3108d5d3142b",
+      "environment": "production",
+      "provider": "Upstash",
+      "database": 0,
+      "identity_verified": true,
+      "tls_certificate_verification": true
+    },
+    "namespace": "agda:production:conversation:*",
+    "configured_conversation_ttl_seconds": 86400,
+    "complete_namespace_scans": 2,
+    "namespace_key_counts": [
+      0,
+      0
+    ],
+    "conversation_string_key_counts": [
+      0,
+      0
+    ],
+    "index_types": [
+      "none",
+      "none"
+    ],
+    "index_pttl_ms": [
+      -2,
+      -2
+    ],
+    "keyset_unchanged_between_observations": true,
+    "index_members_and_scores_unchanged": true,
+    "observed_key_types_unchanged": true,
+    "commands_sent": {
+      "AUTH": 1,
+      "PING": 1,
+      "SCAN": 2,
+      "TYPE": 2,
+      "PTTL": 2
+    },
+    "conversation_values_read": false,
+    "redis_write_commands_sent": false,
+    "atomic_snapshot": false,
+    "historical_capture_time_coverage_proven": false,
+    "inspection_script_sha256": "2b2eb187c32f18c8edb62f940523c34ac17baae74706d3477f7ca281c0f3386c",
+    "evidence_note": "Sanitized summary transcribed from completed live inspector output. No hosted settings, repository files, or existing preservation files were modified by this inspection."
+  },
+  "limitations": [
+    "Original six passing artifact checks do not establish complete historical runtime-namespace coverage.",
+    "The later production namespace scans were not atomic and cannot prove emptiness at original capture time or after the observation window.",
+    "Staging string-key and native-DUMP presence does not validate conversation payload schemas or prove successful restoration.",
+    "No supplemental payload export was created because the inspected production namespace returned no keys.",
+    "No end-to-end restore was performed."
+  ]
+}

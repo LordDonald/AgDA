@@ -1,21 +1,28 @@
 # Phase 28 — External capability expansion
 
+This is the October 12, 2026 implementation and staging record. Its checks and
+rollout boundaries describe that milestone. Subsequent merge, production
+promotion and staging persistence are recorded in [Phase 29](phase29_closure.md).
+See [architecture](architecture.md) and [deployment](deployment.md) for the
+consolidated system and operations guides.
+
 ## Baseline and boundaries
 
-Implementation starts from `66ee03f` (Phase 27, PR #15), in a separate checkout.
+Implementation started from `66ee03f` (Phase 27, PR #15), in a separate checkout.
 The source checkout was clean. The October 12 Phase 27 closure evidence records
 successful FEWS refresh, matching persisted/runtime/store snapshots, and the
-`agda_external_refresh_success` event. Fresh read-only health checks confirm
-staging and production still report `wave5_v1`, `stable`, metric version `1.0.0`,
+`agda_external_refresh_success` event. Health checks at this milestone confirmed
+staging and production reported `wave5_v1`, `stable`, metric version `1.0.0`,
 18 core metrics, readiness true, and two fresh external sources.
 
 Wave5 release artifacts, its registry and contracts remain unchanged. External
 failure never determines core readiness. External data is never joined to Wave5,
-and forecast weather is never relabeled as observed weather. Production remains
-manual-only: API/web repository sources stay blank, only the API mounts
-`/data/external`, weather cron remains `0 */4 * * *`, and FEWS cron remains
-`30 3 1 * *`. Staging memory conversations and absent analytics persistence remain
-separate Phase 29 follow-ups.
+and forecast weather is never relabeled as observed weather. The Phase 28
+production guardrails kept promotion manual-only: API/web repository sources
+stayed blank, only the API mounted `/data/external`, weather cron stayed
+`0 */4 * * *`, and FEWS cron stayed
+`30 3 1 * *`. Staging memory conversations and absent analytics persistence were
+Phase 29 follow-ups; their completion is recorded in the linked closure record.
 
 ## Scope and acceptance criteria
 
@@ -177,9 +184,10 @@ If every selected value is missing, the result is unavailable.
   `38e08b16-5731-4db9-9345-4338bfbb4710`; web deployment remains
   `75b83095-e97a-4cc4-99f8-5a4a21a92f32`. No production deployment occurred.
 
-The scoped Phase 28 implementation and staging gates are complete. Merge and
-manual production promotion remain separate review/release steps. New providers,
-broader geographic coverage and a selector UI remain outside this increment.
+The scoped Phase 28 implementation and staging gates were complete at this
+checkpoint. Merge and manual production promotion were then separate pending
+review/release steps; their later completion is recorded below. New providers,
+broader geographic coverage and a selector UI were outside this increment.
 
 For the subsequent merge, staging revalidation and manual production promotion,
 see the [Phase 29 release and closure record](phase29_closure.md).
