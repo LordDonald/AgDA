@@ -1,11 +1,18 @@
 # Phase 26C.1 — Forecast contract and bounded retrieval pilot
 
-The first weather integration is an explicit local Open-Meteo forecast retrieval.
+This is the Phase 26C.1 retrieval contract and original evaluation record. Its
+local-only and next-step statements describe that milestone. Later persistence,
+API queries, scheduled refresh and hosted rollout are described in
+[architecture](architecture.md), [deployment](deployment.md), the
+[environment contract](environment_contract.md) and [Phase 29](phase29_closure.md).
+
+The first weather integration was an explicit local Open-Meteo forecast retrieval.
 It defines `WeatherForecastRecord`, normalizes the provider response, and creates
 the existing Phase 26A `SourceSnapshot` only after validation succeeds. Importing
 the modules performs no network or filesystem I/O. The pilot does not register
 itself at API startup or change Wave 5, FEWS, question routing, or core readiness.
-Weather persistence and a read-only API are the next Phase 26C step.
+Weather persistence and a read-only API were the next Phase 26C step; their
+later integration is described in the guides linked above.
 
 ## Scope and provider choice
 
@@ -32,7 +39,7 @@ Open-Meteo's [pricing](https://open-meteo.com/en/pricing) permits free evaluatio
 and prototyping. Commercial rollout requires the appropriate subscribed customer
 service; this implementation targets the public evaluation endpoint only. Data
 attribution is retained as Open-Meteo / ECMWF, with CC BY 4.0 licensing. There is
-no scheduled refresh or production enablement in this checkpoint.
+no scheduled refresh or production enablement in this original checkpoint.
 
 ## Time and missing-data meaning
 
@@ -55,8 +62,9 @@ and [Single Runs documentation](https://open-meteo.com/en/docs/single-runs-api).
 forecast-valid hours for this `WEATHER_FORECAST` source. They do not reclassify
 forecasts as observations or include the preceding precipitation interval.
 `refreshed_at` equals retrieval time. The source's six-hour stale threshold is a
-local retrieval-age policy; `expected_refresh_hours=None` reflects manual-only
-refresh. No provider issue-time freshness or forecast skill is inferred.
+local retrieval-age policy; the pilot metadata
+`expected_refresh_hours=None` does not describe the later hosted scheduler.
+No provider issue-time freshness or forecast skill is inferred.
 
 Individual null values remain null, and `missing_value_count` counts them across
 all three variables. The probe reports `data_quality: partial` when any are

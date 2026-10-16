@@ -5,6 +5,13 @@ The [Phase 29 closure record](phase29_closure.md) records the actual configurati
 deployment revisions, and validation results. A setting listed here does not
 establish that its service has been provisioned or its validation has passed.
 
+See the [architecture guide](architecture.md) for component and storage
+responsibilities, the [deployment guide](deployment.md) for the last recorded
+hosted topology and manual promotion process, and the
+[hosted-data preservation record](hosted_data_preservation.md) for capture scope
+and recovery limitations. For local configuration, use the
+[local-development guide](local_development.md).
+
 ## Backend settings
 
 | Variable | Runtime default | Meaning and deployment requirement |
@@ -28,8 +35,12 @@ The example environment file contains explicit development values. Copying it
 does not apply the production defaults above; review every hosted setting.
 Real environment files and credential values must never be committed.
 
-Redis keys use an environment-specific namespace. The Redis store connects and
-pings during startup, so selecting Redis creates a runtime availability
+The API runtime sets the Redis prefix to `agda:{environment}:conversation`,
+using `AGDA_ENV`. Production keys therefore begin with
+`agda:production:conversation:` and staging keys with
+`agda:staging:conversation:`; each namespace has its own `index` key. This
+overrides the store constructor's unqualified default prefix. The Redis store
+connects and pings during startup, so selecting Redis creates a runtime availability
 dependency. Validate connectivity, conversation continuity after restart, TTL,
 and environment isolation before accepting the restoration. The memory backend
 loses conversations on restart and does not share them across instances.

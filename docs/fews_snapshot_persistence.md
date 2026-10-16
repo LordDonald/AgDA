@@ -1,6 +1,12 @@
 # Phase 26B.4 — FEWS snapshot persistence and registry integration
 
-Completed FEWS monthly results can now be stored in a local SQLite database and
+This is the Phase 26B.4 local persistence design and validation record. Its pilot
+commands and phase boundaries predate the hosted refresh workflow. See
+[architecture](architecture.md), [deployment](deployment.md) and the
+[environment contract](environment_contract.md) for the later integrated system,
+and [Phase 29](phase29_closure.md) for hosted validation.
+
+Completed FEWS monthly results can be stored in a local SQLite database and
 restored into the existing Phase 26A source registry. SQLite is provided by
 Python; no new dependency or Wave 5 database connection is needed. The Phase 26A
 contracts, registry, catalog, and core readiness rules are unchanged.
@@ -59,7 +65,9 @@ snapshot is already available. Reload failures preserve any prior good state.
 external storage. API startup performs no HTTP, and normal requests read the
 in-memory registry. After a separate ingestion process saves newer data, restart
 the API or explicitly call its local `runtime.reload_fews_snapshot()` method.
-There is no public refresh endpoint or background polling in this phase.
+Phase 26B.4 added no public refresh endpoint or background polling. Later
+operations added authenticated internal refresh/reload endpoints; use the linked
+architecture and deployment guides for that workflow.
 
 ## Durability and data semantics
 
@@ -90,7 +98,9 @@ processes each maintain their own registry and must reload to see newer data.
 
 The envelope hash detects accidental corruption; it is not an authenticity
 signature against someone who can rewrite the database and its hashes.
-History retention and shared production storage are outside this local pilot.
+History retention and shared production storage were outside this local pilot;
+later API-owned volume deployment is recorded in the deployment and Phase 29
+guides.
 
 ## Verification
 
@@ -105,6 +115,6 @@ $env:PYTHONUTF8 = "1"
 
 Tests use temporary databases and deterministic mocked HTTP, including actual
 transaction rollback, restart hydration, corrupt storage, monotonic updates,
-query isolation, precision, and API readiness. The three new scripts join the
-existing 28-script backend suite. Live ingestion remains an explicit manual
+query isolation, precision, and API readiness. At this checkpoint, the three
+new scripts joined the existing 28-script backend suite. Live ingestion remains an explicit manual
 action through the command above.

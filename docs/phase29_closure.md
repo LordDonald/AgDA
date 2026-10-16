@@ -1,6 +1,6 @@
 # Phase 29 release and closure record
 
-Status on October 15, 2026: **release promoted; runtime closure gates passed; final closure PR validation remains**.
+Status on October 15, 2026: **Phase 29 closed; release promoted; runtime closure gates and final CI passed; PR #17 merged**.
 The reviewed Phase 28 implementation remains the deployed runtime in staging and
 production. Dedicated staging Redis and PostgreSQL analytics persistence have now
 been restored and proven across API redeployment. Authenticated web analytics and
@@ -17,7 +17,7 @@ changed during this persistence/visual closure work.
 | Production release | Manually promote the same clean revision after staging; verify source and behavior | Passed for API and web |
 | Staging persistence | Dedicated resources; schema verified; Redis context and analytics survive redeployment | Passed; dedicated staging Redis and PostgreSQL survived the before/redeploy/after proof |
 | Secrets and config | Separate environment/role secrets, correct private targets, no public credentials, manual production guardrails | Passed for the checks described below |
-| Regression and CI | Backend regression, trusted hosts, user/manual QA, frontend lint/build | Release main CI passed; previous closure-head CI passed; final updated closure head still requires CI |
+| Regression and CI | Backend regression, trusted hosts, user/manual QA, frontend lint/build | Passed: release main CI, final closure-head CI, and post-merge main CI; see closure merge evidence below |
 | Browser rendering QA | Clicked staging journeys, keyboard path, analytics dashboard, zoom/responsive behavior | Passed 4/4 on the deployed staging web UI |
 | Environment freeze | Record exact deployments, sources, volumes, schedules, readiness and open items | Renewed after live persistence/browser QA; all sanitized configuration checks passed |
 
@@ -47,6 +47,25 @@ and their regression coverage.
   in both deployed environments. The manifests hash actual checkout bytes,
   including intentional Git newline handling. They do not attest generated web
   build assets or unrelated extra files.
+
+## Closure merge and final CI
+
+- [PR #17](https://github.com/LordDonald/AgDA/pull/17) merged at
+  `2026-10-15T18:31:10Z`.
+- Final closure head: `1803db6987b5d3a1fa14a7571cf9818a9e5a3626`.
+- Closure merge on main: `b8e21b75d7e8604ac3f7c54fbdcabe335d7a7a03`.
+- [Closure PR CI run 38785665389](https://github.com/LordDonald/AgDA/actions/runs/38785665389)
+  passed both Backend regression and QA and Frontend lint and production build
+  at the final closure head.
+- [Post-merge main CI run 38786299410](https://github.com/LordDonald/AgDA/actions/runs/38786299410)
+  passed at the closure merge.
+- The closure merge tree matches the final closure head tree.
+
+The closure merge records documentation, configuration examples, operational
+validation tools and regression coverage. The last independently source-verified
+runtime release in staging and production remains
+`722e6d5b00b6f97d798d64cb568651bcbc35052e`. The deployment and live-validation
+records below describe the historical Phase 29 checks at that runtime release.
 
 ## Deployment record
 
@@ -195,9 +214,10 @@ environment release verifier, source-identity builder and staging persistence
 proof tests. Independent local checks passed user QA 23/23, all five manual QA
 journeys, trusted-host allow=200/block=400 and dependency consistency. The source
 probe safety suite passed 8 tests, the environment smoke safety suite 12, and
-persistence proof safety suite 12. `git diff --check` passed. Closure CI evidence
-belongs to the closure PR; the deployed runtime remains the exact merge SHA
-recorded above.
+persistence proof safety suite 12. `git diff --check` passed. Final closure-head
+and post-merge CI results are linked in the closure merge section above. The last
+source-verified deployed runtime is
+`722e6d5b00b6f97d798d64cb568651bcbc35052e`.
 
 `tools/validate_phase29_release.py` requires an explicit staging or production
 selection, verifies stable core/environment health before analytical POSTs,
@@ -209,7 +229,6 @@ flags that can hide tracked-file changes, and writes outside the release checkou
 Its Python or Node probes require the selected environment, constrain manifest
 paths, and report only revision, file count and mismatched relative paths.
 
-The runtime persistence, visual QA and renewed environment-freeze closure gates
-are now satisfied. Phase 29 remains open only for final closure-head
-validation/CI, review of the resulting documentation-only diff and guarded merge
-of PR #17.
+Phase 29 is closed. The runtime persistence, visual QA and renewed
+environment-freeze gates passed, final closure-head CI passed, and PR #17 was
+merged. Post-merge main CI also passed, as recorded above.

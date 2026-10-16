@@ -1,6 +1,15 @@
 # AgDA Step 20 Release Readiness Report
 
-## Status
+> Historical Step 20 gate, committed September 15, 2026. Test totals, supported
+> behavior and remaining UX/deployment work below describe the original core
+> release. They are not current regression counts or outstanding launch tasks.
+>
+> [Staging readiness](staging_readiness.md) and [production launch](production_launch.md)
+> subsequently recorded the persistent composer and original launch validation.
+> Use [Phase 29](phase29_closure.md) for later release/CI evidence and the
+> [architecture](architecture.md) for the current core and external-source scope.
+
+## Original Step 20 status
 
 **Step 20: PASSED**
 
@@ -8,7 +17,7 @@ AgDA has completed full backend regression, automated user-question QA,
 natural-language persona testing, and targeted remediation of issues discovered
 during manual QA.
 
-This gate validates application behavior against the current `wave5_v1`
+This gate validated application behavior against the milestone's `wave5_v1`
 analytical release and metric version `1.0.0`.
 
 ---
@@ -216,7 +225,7 @@ The following controls remain active:
 
 ## 6. Release Integrity
 
-Current analytical release:
+Analytical release validated at Step 20:
 
 - Data version: `wave5_v1`
 - Metric version: `1.0.0`
@@ -236,7 +245,7 @@ No additional metric was added to the immutable Wave 5 release.
 AgDA remains a deterministic evidence-backed analytical assistant rather than a
 general agricultural recommendation engine.
 
-Current limitations include:
+Limitations recorded for the Step 20 core release include:
 
 - no causal-effect estimation;
 - no individualized agronomic recommendations;
@@ -250,10 +259,13 @@ Current limitations include:
 
 ---
 
-## 8. Deferred Pre-Launch UX Requirement
+## 8. Pre-Launch UX Requirement Deferred at Step 20
 
-The current conversation page requires users to scroll back toward the question
-composer after reading later responses.
+The Step 20 conversation page required users to scroll back toward the question
+composer after reading later responses. The [Step 22 staging record](staging_readiness.md)
+and [production launch record](production_launch.md) later document a persistent
+composer and responsive browser validation. The original requirement below is
+retained as milestone history, not a current issue list.
 
 Before production launch, the interface should be redesigned into a persistent
 chat-style conversation layout:
@@ -272,7 +284,7 @@ results in Step 20.
 
 ---
 
-## 9. Step 20 Decision
+## 9. Original Step 20 Decision
 
 All required analytical, routing, conversational, API, safety, and regression
 checks for Step 20 have passed.

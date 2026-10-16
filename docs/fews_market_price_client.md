@@ -1,5 +1,10 @@
 # Phase 26B.3 — bounded FEWS monthly client
 
+This is the Phase 26B.3 client contract and original validation record. Test
+counts and live results below belong to that checkpoint. For later runtime
+integration, refresh operations and hosted validation, see [architecture](architecture.md),
+[deployment](deployment.md) and the [Phase 29 closure](phase29_closure.md).
+
 `packages.data_sources.providers.fews_http_client` retrieves public Nigeria
 market prices using the existing 26B.2 normalizer and Phase 26A `SourceSnapshot`.
 It has no persistence or runtime registration side effects. Importing the module
@@ -87,9 +92,9 @@ $env:PYTHONUTF8 = "1"
 .\.venv\Scripts\python.exe .\tests\qa\run_user_qa.py
 ```
 
-The backend suite now includes both 26B.2 adapter and 26B.3 client scripts (28
-scripts total). Client tests inject responses and time; transport tests mock the
-HTTP opener. They never depend on live FEWS availability.
+At the Phase 26B.3 checkpoint, the backend suite included both 26B.2 adapter
+and 26B.3 client scripts (28 scripts total). Client tests inject responses and
+time; transport tests mock the HTTP opener. They never depend on live FEWS availability.
 
 The separate manual probe makes no network request unless `--live` is present:
 
